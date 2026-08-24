@@ -1,0 +1,79 @@
+// -----------------------------------------------------------------------------
+// PixelCore Design System — layout utilities
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/variables" as v;
+@use "../abstracts/mixins" as m;
+
+.cp-container {
+	@include m.container;
+}
+
+.cp-full-width {
+	width: 100%;
+	max-width: none;
+}
+
+.cp-relative {
+	position: relative;
+}
+
+.cp-overflow-hidden {
+	overflow: hidden;
+}
+
+.cp-grid {
+	@include m.grid;
+}
+
+@for $i from 1 through v.$grid-columns {
+	.cp-grid-#{$i} {
+		grid-template-columns: repeat( $i, 1fr );
+	}
+}
+
+.cp-flex {
+	@include m.flex;
+}
+
+.cp-flex-col {
+	@include m.flex( column );
+}
+
+.cp-flex-wrap {
+	flex-wrap: wrap;
+}
+
+.cp-items-center {
+	align-items: center;
+}
+
+.cp-items-start {
+	align-items: flex-start;
+}
+
+.cp-justify-center {
+	justify-content: center;
+}
+
+.cp-justify-between {
+	justify-content: space-between;
+}
+
+@include m.tablet {
+	.cp-grid-tablet-1 {
+		grid-template-columns: 1fr;
+	}
+	.cp-grid-tablet-2 {
+		grid-template-columns: repeat( 2, 1fr );
+	}
+}
+
+@include m.mobile {
+	.cp-grid-mobile-1 {
+		grid-template-columns: 1fr;
+	}
+	.cp-flex-mobile-col {
+		flex-direction: column;
+	}
+}

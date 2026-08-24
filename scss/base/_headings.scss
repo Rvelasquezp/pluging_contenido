@@ -1,0 +1,41 @@
+// -----------------------------------------------------------------------------
+// PixelCore Design System — headings (clases .cp-h1…, opt-in)
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/variables" as v;
+
+.cp-heading {
+	font-family: v.$font-family-heading;
+	line-height: v.$line-height-heading;
+	color: v.$color-text;
+	margin: 0 0 v.$spacing-md;
+}
+
+.cp-h1 {
+	@extend .cp-heading;
+	font-size: v.$font-size-h1;
+}
+
+.cp-h2 {
+	@extend .cp-heading;
+	font-size: v.$font-size-h2;
+}
+
+.cp-h3 {
+	@extend .cp-heading;
+	font-size: v.$font-size-h3;
+}
+
+.cp-eyebrow {
+	display: inline-block;
+	font-size: v.$font-size-sm;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: v.$color-secondary;
+	margin-bottom: v.$spacing-sm;
+}
+
+.cp-text-muted {
+	color: v.$color-text-muted;
+}

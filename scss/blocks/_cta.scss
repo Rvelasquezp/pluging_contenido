@@ -1,0 +1,79 @@
+// -----------------------------------------------------------------------------
+// PixelCore — CTA block
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/variables" as v;
+@use "../abstracts/mixins" as m;
+
+.pixelcore-cta {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: v.$spacing-xl;
+	padding: v.$spacing-xl v.$container-padding;
+	border-radius: v.$radius-lg;
+	background-color: v.$color-surface;
+	overflow: hidden;
+
+	&__content {
+		flex: 1;
+	}
+
+	&__description {
+		color: v.$color-text-muted;
+		margin-top: v.$spacing-sm;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: v.$spacing-md;
+		margin-top: v.$spacing-lg;
+	}
+
+	&__media {
+		flex: 0 0 32%;
+
+		img {
+			border-radius: v.$radius-md;
+			width: 100%;
+		}
+	}
+
+	&--center {
+		flex-direction: column;
+		text-align: center;
+
+		.pixelcore-cta__actions {
+			justify-content: center;
+		}
+
+		.pixelcore-cta__description {
+			margin-inline: auto;
+			max-width: 46em;
+		}
+	}
+
+	&--split-right {
+		flex-direction: row;
+	}
+
+	&--split-left {
+		flex-direction: row-reverse;
+	}
+
+	@include m.mobile {
+		flex-direction: column;
+		padding: v.$spacing-lg;
+		text-align: center;
+
+		&__media {
+			flex-basis: auto;
+			order: -1;
+		}
+
+		&__actions {
+			justify-content: center;
+		}
+	}
+}

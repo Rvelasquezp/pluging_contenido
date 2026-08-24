@@ -1,0 +1,28 @@
+// -----------------------------------------------------------------------------
+// PixelCore — extras solo para el editor (además de pixelcore.css, que ya
+// se carga también en el canvas del editor vía block.json "style").
+// Compila a: assets/css/pixelcore-editor.css
+// -----------------------------------------------------------------------------
+
+@use "abstracts/variables" as v;
+
+.pixelcore-editor-placeholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 8rem;
+	border: 1px dashed v.$color-border;
+	border-radius: v.$radius-sm;
+	color: v.$color-text-muted;
+	background-color: v.$color-surface;
+}
+
+.pixelcore-hero {
+	.pixelcore-hero__content {
+		width: 100%;
+	}
+}
+
+.pixelcore-accordion-item .block-list-appender {
+	padding: v.$spacing-sm v.$spacing-lg v.$spacing-lg;
+}

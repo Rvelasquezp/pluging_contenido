@@ -1,0 +1,38 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pixelcore/cta",
+	"title": "PixelCore CTA",
+	"category": "pixelcore",
+	"icon": "megaphone",
+	"description": "Llamada a la acción con título, descripción, imagen opcional y hasta dos botones.",
+	"textdomain": "capixel-components",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"customClassName": true,
+		"align": [ "wide", "full" ]
+	},
+	"attributes": {
+		"title": { "type": "string", "default": "" },
+		"description": { "type": "string", "default": "" },
+		"mediaUrl": { "type": "string", "default": "" },
+		"mediaId": { "type": "number", "default": 0 },
+		"mediaAlt": { "type": "string", "default": "" },
+		"buttonText": { "type": "string", "default": "" },
+		"buttonUrl": { "type": "string", "default": "" },
+		"button2Text": { "type": "string", "default": "" },
+		"button2Url": { "type": "string", "default": "" },
+		"layout": { "type": "string", "default": "center" },
+		"backgroundColor": { "type": "string", "default": "" },
+		"animation": {
+			"type": "object",
+			"default": { "preset": "none", "trigger": "scroll" }
+		}
+	},
+	"style": "pixelcore-css",
+	"editorStyle": "pixelcore-editor-css",
+	"viewScript": "pixelcore-js",
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

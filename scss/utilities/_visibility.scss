@@ -1,0 +1,27 @@
+// -----------------------------------------------------------------------------
+// PixelCore Design System — visibility utilities
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/mixins" as m;
+
+.cp-hidden {
+	display: none !important;
+}
+
+@include m.mobile {
+	.cp-hidden-mobile {
+		display: none !important;
+	}
+}
+
+@include m.tablet-only {
+	.cp-hidden-tablet {
+		display: none !important;
+	}
+}
+
+@include m.desktop {
+	.cp-hidden-desktop {
+		display: none !important;
+	}
+}

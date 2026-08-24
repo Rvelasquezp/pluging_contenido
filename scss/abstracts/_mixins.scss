@@ -1,0 +1,75 @@
+// -----------------------------------------------------------------------------
+// PixelCore Design System — mixins
+// -----------------------------------------------------------------------------
+
+@use "variables" as v;
+
+/// Aplica el contenido solo hasta el breakpoint mobile (max-width).
+@mixin mobile {
+	@media screen and (max-width: v.$breakpoint-mobile) {
+		@content;
+	}
+}
+
+/// Aplica el contenido hasta el breakpoint tablet (max-width) — incluye mobile.
+@mixin tablet {
+	@media screen and (max-width: v.$breakpoint-tablet) {
+		@content;
+	}
+}
+
+/// Aplica el contenido únicamente en el rango tablet (entre mobile y tablet).
+@mixin tablet-only {
+	@media screen and (min-width: (v.$breakpoint-mobile + 1)) and (max-width: v.$breakpoint-tablet) {
+		@content;
+	}
+}
+
+/// Aplica el contenido a partir de desktop (min-width, por encima de tablet).
+@mixin desktop {
+	@media screen and (min-width: (v.$breakpoint-tablet + 1)) {
+		@content;
+	}
+}
+
+/// Container centrado con ancho máximo + padding lateral responsive.
+@mixin container {
+	width: 100%;
+	max-width: v.$container-max-width;
+	margin-inline: auto;
+	padding-inline: v.$container-padding;
+}
+
+/// Grid de N columnas con gap configurable.
+@mixin grid( $columns: v.$grid-columns, $gap: v.$grid-gap ) {
+	display: grid;
+	grid-template-columns: repeat( $columns, 1fr );
+	gap: $gap;
+}
+
+/// Flex helper rápido.
+@mixin flex( $direction: row, $align: center, $justify: flex-start, $gap: 0 ) {
+	display: flex;
+	flex-direction: $direction;
+	align-items: $align;
+	justify-content: $justify;
+
+	@if $gap != 0 {
+		gap: $gap;
+	}
+}
+
+/// Respeta prefers-reduced-motion: desactiva transiciones/animaciones CSS.
+@mixin respect-reduced-motion {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}
+
+/// Line-clamp cross-browser para truncar texto a N líneas.
+@mixin line-clamp( $lines: 3 ) {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: $lines;
+	overflow: hidden;
+}

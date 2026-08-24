@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pixelcore/accordion-item",
+	"title": "PixelCore Accordion Item",
+	"category": "pixelcore",
+	"icon": "arrow-down-alt2",
+	"description": "Un item del Accordion: título + contenido (cualquier bloque de Gutenberg).",
+	"textdomain": "capixel-components",
+	"parent": [ "pixelcore/accordion" ],
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"attributes": {
+		"title": { "type": "string", "default": "" },
+		"openByDefault": { "type": "boolean", "default": false }
+	},
+	"style": "pixelcore-css",
+	"editorStyle": "pixelcore-editor-css",
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,106 @@
+// -----------------------------------------------------------------------------
+// PixelCore — Hero block
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/variables" as v;
+@use "../abstracts/mixins" as m;
+
+.pixelcore-hero {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 60vh;
+	color: #fff;
+	text-align: center;
+
+	&__media {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+
+		img,
+		video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	&__overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background-color: #000;
+		opacity: 0.4;
+	}
+
+	&__content {
+		position: relative;
+		z-index: 2;
+		margin-inline: auto;
+	}
+
+	// El color/tamaño se leen de variables CSS puestas inline (ver render.php
+	// e index.js) y llevan !important a propósito: así siempre ganan sobre
+	// cualquier color/tamaño por defecto del editor o del theme, sin importar
+	// el orden en que se carguen las hojas de estilo.
+	&__title {
+		color: var(--pc-title-color, inherit) !important;
+		font-size: var(--pc-title-font-size, #{v.$font-size-h1}) !important;
+	}
+
+	&__description {
+		font-size: var(--pc-description-font-size, #{v.$font-size-lg}) !important;
+		color: var(--pc-description-color, inherit) !important;
+		line-height: v.$line-height-base;
+		opacity: 0.92;
+		max-width: 42em;
+		margin-inline: auto;
+	}
+
+	&__actions {
+		margin-top: v.$spacing-lg;
+		flex-wrap: wrap;
+	}
+
+	&--align-left {
+		text-align: left;
+
+		.pixelcore-hero__content {
+			margin-inline: 0;
+		}
+
+		.pixelcore-hero__description {
+			margin-inline: 0;
+		}
+
+		.pixelcore-hero__actions {
+			justify-content: flex-start;
+		}
+	}
+
+	&--align-right {
+		text-align: right;
+
+		.pixelcore-hero__content {
+			margin-inline: 0 0;
+			margin-left: auto;
+		}
+
+		.pixelcore-hero__description {
+			margin-inline: 0 0;
+			margin-left: auto;
+		}
+
+		.pixelcore-hero__actions {
+			justify-content: flex-end;
+		}
+	}
+
+	// Sin media de fondo: vuelve a los colores de texto normales del theme.
+	&--no-media {
+		color: v.$color-text;
+	}
+}

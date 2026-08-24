@@ -1,0 +1,115 @@
+// -----------------------------------------------------------------------------
+// PixelCore — Card block
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/variables" as v;
+@use "../abstracts/mixins" as m;
+
+.pixelcore-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	background-color: v.$color-background;
+	border-radius: v.$radius-md;
+	overflow: hidden;
+	transition: transform v.$transition-base, box-shadow v.$transition-base;
+
+	&__media {
+		aspect-ratio: 16 / 10;
+		overflow: hidden;
+		background-color: v.$color-surface;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transition: transform v.$transition-base;
+		}
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: v.$spacing-sm;
+		padding: v.$spacing-lg;
+	}
+
+	&__icon {
+		font-size: 1.75rem;
+		color: v.$color-secondary;
+	}
+
+	&__title {
+		margin: 0;
+
+		a {
+			color: inherit;
+			text-decoration: none;
+		}
+	}
+
+	&__description {
+		color: v.$color-text-muted;
+		margin: 0;
+	}
+
+	&__button {
+		margin-top: v.$spacing-sm;
+	}
+
+	// Estilos ---------------------------------------------------------------
+	&--flat {
+		box-shadow: none;
+		border: 1px solid v.$color-border;
+	}
+
+	&--elevated {
+		box-shadow: v.$shadow-sm;
+	}
+
+	&--outline {
+		box-shadow: none;
+		border: 1px solid v.$color-border;
+		background-color: transparent;
+	}
+
+	// Orientación -------------------------------------------------------------
+	&--horizontal {
+		flex-direction: row;
+
+		.pixelcore-card__media {
+			flex: 0 0 40%;
+			aspect-ratio: auto;
+		}
+
+		.pixelcore-card__body {
+			flex: 1;
+		}
+
+		@include m.mobile {
+			flex-direction: column;
+
+			.pixelcore-card__media {
+				flex-basis: auto;
+				aspect-ratio: 16 / 10;
+			}
+		}
+	}
+
+	// Hover ------------------------------------------------------------------
+	&--hover-lift:hover {
+		transform: translateY(-6px);
+		box-shadow: v.$shadow-md;
+	}
+
+	&--hover-shadow:hover {
+		box-shadow: v.$shadow-md;
+	}
+
+	&--hover-zoom-image:hover {
+		.pixelcore-card__media img {
+			transform: scale(1.08);
+		}
+	}
+}

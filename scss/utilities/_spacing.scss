@@ -1,0 +1,90 @@
+// -----------------------------------------------------------------------------
+// PixelCore Design System — spacing utilities
+//
+// Genera cp-mt-md, cp-px-lg, cp-gap-sm, etc. a partir de $spacing-scale.
+// Cada utilidad también existe en variante -tablet y -mobile (mobile-first
+// override) para poder, por ejemplo, reducir un padding solo en mobile:
+// class="cp-py-xl cp-py-md-mobile"
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/variables" as v;
+@use "../abstracts/mixins" as m;
+
+$cp-sides: (
+	"t": "top",
+	"r": "right",
+	"b": "bottom",
+	"l": "left",
+);
+
+@mixin cp-spacing-set( $suffix: "" ) {
+	@each $key, $value in v.$spacing-scale {
+		// Margin / padding en las 4 direcciones.
+		.cp-mt-#{$key}#{$suffix} {
+			margin-top: $value;
+		}
+		.cp-mb-#{$key}#{$suffix} {
+			margin-bottom: $value;
+		}
+		.cp-ml-#{$key}#{$suffix} {
+			margin-left: $value;
+		}
+		.cp-mr-#{$key}#{$suffix} {
+			margin-right: $value;
+		}
+		.cp-mx-#{$key}#{$suffix} {
+			margin-left: $value;
+			margin-right: $value;
+		}
+		.cp-my-#{$key}#{$suffix} {
+			margin-top: $value;
+			margin-bottom: $value;
+		}
+
+		.cp-pt-#{$key}#{$suffix} {
+			padding-top: $value;
+		}
+		.cp-pb-#{$key}#{$suffix} {
+			padding-bottom: $value;
+		}
+		.cp-pl-#{$key}#{$suffix} {
+			padding-left: $value;
+		}
+		.cp-pr-#{$key}#{$suffix} {
+			padding-right: $value;
+		}
+		.cp-px-#{$key}#{$suffix} {
+			padding-left: $value;
+			padding-right: $value;
+		}
+		.cp-py-#{$key}#{$suffix} {
+			padding-top: $value;
+			padding-bottom: $value;
+		}
+
+		// Gap (flex/grid).
+		.cp-gap-#{$key}#{$suffix} {
+			gap: $value;
+		}
+	}
+
+	.cp-m-0#{$suffix} {
+		margin: 0;
+	}
+	.cp-p-0#{$suffix} {
+		padding: 0;
+	}
+}
+
+// Base (todos los tamaños).
+@include cp-spacing-set();
+
+// Override solo en tablet e inferior.
+@include m.tablet {
+	@include cp-spacing-set( "-tablet" );
+}
+
+// Override solo en mobile.
+@include m.mobile {
+	@include cp-spacing-set( "-mobile" );
+}

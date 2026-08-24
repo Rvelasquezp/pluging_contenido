@@ -1,0 +1,23 @@
+// -----------------------------------------------------------------------------
+// PixelCore Design System — text utilities
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/mixins" as m;
+
+.cp-text-center {
+	text-align: center;
+}
+
+.cp-text-left {
+	text-align: left;
+}
+
+.cp-text-right {
+	text-align: right;
+}
+
+@include m.mobile {
+	.cp-text-center-mobile {
+		text-align: center;
+	}
+}

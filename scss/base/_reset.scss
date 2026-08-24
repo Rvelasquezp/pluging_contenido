@@ -1,0 +1,24 @@
+// -----------------------------------------------------------------------------
+// PixelCore Design System — reset mínimo
+//
+// A propósito NO tocamos selectores globales (html, body, h1…) para no
+// pisar los estilos del theme donde se instale el plugin. Todo queda
+// contenido dentro de [class*="pixelcore-"] (el wrapper de cada bloque).
+// -----------------------------------------------------------------------------
+
+[class*="pixelcore-"] {
+	box-sizing: border-box;
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: inherit;
+	}
+
+	img,
+	video {
+		display: block;
+		max-width: 100%;
+		height: auto;
+	}
+}

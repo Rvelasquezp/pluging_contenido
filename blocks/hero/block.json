@@ -1,0 +1,50 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pixelcore/hero",
+	"title": "PixelCore Hero",
+	"category": "pixelcore",
+	"icon": "cover-image",
+	"description": "Sección hero con título, descripción, imagen o video de fondo, overlay y hasta dos botones.",
+	"textdomain": "capixel-components",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"customClassName": true,
+		"align": [ "wide", "full" ]
+	},
+	"attributes": {
+		"title": { "type": "string", "default": "" },
+		"titleTag": { "type": "string", "default": "h1" },
+		"titleColor": { "type": "string", "default": "" },
+		"titleFontSize": { "type": "string", "default": "" },
+		"description": { "type": "string", "default": "" },
+		"descriptionColor": { "type": "string", "default": "" },
+		"descriptionFontSize": { "type": "string", "default": "" },
+		"mediaType": { "type": "string", "default": "image" },
+		"mediaUrl": { "type": "string", "default": "" },
+		"mediaId": { "type": "number", "default": 0 },
+		"mediaAlt": { "type": "string", "default": "" },
+		"buttonText": { "type": "string", "default": "" },
+		"buttonUrl": { "type": "string", "default": "" },
+		"buttonTarget": { "type": "boolean", "default": false },
+		"button2Text": { "type": "string", "default": "" },
+		"button2Url": { "type": "string", "default": "" },
+		"button2Target": { "type": "boolean", "default": false },
+		"contentAlign": { "type": "string", "default": "center" },
+		"maxWidth": { "type": "number", "default": 800 },
+		"minHeight": { "type": "string", "default": "70vh" },
+		"backgroundColor": { "type": "string", "default": "" },
+		"overlayColor": { "type": "string", "default": "#000000" },
+		"overlayOpacity": { "type": "number", "default": 40 },
+		"animation": {
+			"type": "object",
+			"default": { "preset": "none", "trigger": "scroll" }
+		}
+	},
+	"style": "pixelcore-css",
+	"editorStyle": "pixelcore-editor-css",
+	"viewScript": "pixelcore-js",
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

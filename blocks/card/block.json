@@ -1,0 +1,38 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pixelcore/card",
+	"title": "PixelCore Card",
+	"category": "pixelcore",
+	"icon": "id-alt",
+	"description": "Card con imagen, icono, título, descripción, enlace y botón.",
+	"textdomain": "capixel-components",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"customClassName": true
+	},
+	"attributes": {
+		"imageUrl": { "type": "string", "default": "" },
+		"imageId": { "type": "number", "default": 0 },
+		"imageAlt": { "type": "string", "default": "" },
+		"icon": { "type": "string", "default": "" },
+		"title": { "type": "string", "default": "" },
+		"description": { "type": "string", "default": "" },
+		"link": { "type": "string", "default": "" },
+		"buttonText": { "type": "string", "default": "" },
+		"buttonUrl": { "type": "string", "default": "" },
+		"orientation": { "type": "string", "default": "vertical" },
+		"cardStyle": { "type": "string", "default": "elevated" },
+		"hoverAnimation": { "type": "string", "default": "lift" },
+		"animation": {
+			"type": "object",
+			"default": { "preset": "none", "trigger": "scroll" }
+		}
+	},
+	"style": "pixelcore-css",
+	"editorStyle": "pixelcore-editor-css",
+	"viewScript": "pixelcore-js",
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

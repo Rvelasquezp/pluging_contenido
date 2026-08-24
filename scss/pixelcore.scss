@@ -1,0 +1,18 @@
+// -----------------------------------------------------------------------------
+// PixelCore Design System — entry point de producción
+// Compila a: assets/css/pixelcore.css
+// -----------------------------------------------------------------------------
+
+@use "base/reset";
+@use "base/buttons";
+@use "base/headings";
+
+@use "utilities/layout";
+@use "utilities/spacing";
+@use "utilities/visibility";
+@use "utilities/text";
+
+@use "blocks/hero";
+@use "blocks/card";
+@use "blocks/accordion";
+@use "blocks/cta";
