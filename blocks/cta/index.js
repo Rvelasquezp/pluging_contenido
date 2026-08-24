@@ -16,6 +16,7 @@
 	var PanelBody          = wp.components.PanelBody;
 	var TextControl        = wp.components.TextControl;
 	var SelectControl      = wp.components.SelectControl;
+	var RangeControl       = wp.components.RangeControl;
 	var Button             = wp.components.Button;
 
 	var PALETTE = [
@@ -36,7 +37,10 @@
 
 			var blockProps = useBlockProps( {
 				className: "pixelcore-cta pixelcore-cta--" + attrs.layout,
-				style: { backgroundColor: attrs.backgroundColor || undefined },
+				style: {
+					backgroundColor: attrs.backgroundColor || undefined,
+					borderRadius: attrs.borderRadius + "px",
+				},
 			} );
 
 			var contentPanel = el( PanelBody, { title: __( "Layout", "capixel-components" ), key: "layout" }, [
@@ -77,6 +81,16 @@
 					value: attrs.backgroundColor,
 					onChange: function ( value ) {
 						set( { backgroundColor: value || "" } );
+					},
+				} ),
+				el( RangeControl, {
+					key: "borderRadius",
+					label: __( "Border radius (px)", "capixel-components" ),
+					value: attrs.borderRadius,
+					min: 0,
+					max: 100,
+					onChange: function ( value ) {
+						set( { borderRadius: value } );
 					},
 				} ),
 			] );

@@ -25,6 +25,7 @@
 		"button2Url": { "type": "string", "default": "" },
 		"layout": { "type": "string", "default": "center" },
 		"backgroundColor": { "type": "string", "default": "" },
+		"borderRadius": { "type": "number", "default": 24 },
 		"animation": {
 			"type": "object",
 			"default": { "preset": "none", "trigger": "scroll" }

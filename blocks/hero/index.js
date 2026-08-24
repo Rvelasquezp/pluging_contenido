@@ -57,12 +57,23 @@
 			}
 
 			var blockProps = useBlockProps( {
-				className: "pixelcore-hero pixelcore-hero--align-" + attrs.contentAlign + ( attrs.mediaUrl ? "" : " pixelcore-hero--no-media" ),
+				className: "pixelcore-hero pixelcore-hero--align-" + attrs.contentAlign +
+						( attrs.mediaUrl ? "" : " pixelcore-hero--no-media" ) +
+						( attrs.useCustomPosition ? " pixelcore-hero--custom-position" : "" ),
 				style: {
 					minHeight: attrs.minHeight,
 					backgroundColor: attrs.backgroundColor || undefined,
 				},
 			} );
+
+			var contentStyle = { maxWidth: attrs.maxWidth + "px" };
+
+			if ( attrs.useCustomPosition ) {
+				contentStyle.position = "absolute";
+				contentStyle.left = attrs.positionX + "vw";
+				contentStyle.top = attrs.positionY + "vh";
+				contentStyle.margin = 0;
+			}
 
 			var mediaPanel = el( PanelBody, { title: __( "Media", "capixel-components" ), key: "media" }, [
 				el( SelectControl, {
@@ -206,6 +217,39 @@
 						set( { minHeight: value } );
 					},
 				} ),
+				el( ToggleControl, {
+					key: "useCustomPosition",
+					label: __( "Use custom position", "capixel-components" ),
+					help: __( "Posiciona el contenido con coordenadas exactas en vez de la alineación de texto.", "capixel-components" ),
+					checked: attrs.useCustomPosition,
+					onChange: function ( value ) {
+						set( { useCustomPosition: value } );
+					},
+				} ),
+				attrs.useCustomPosition &&
+					el( RangeControl, {
+						key: "positionX",
+						label: __( "Position X (vw)", "capixel-components" ),
+						value: attrs.positionX,
+						min: 0,
+						max: 100,
+						step: 0.5,
+						onChange: function ( value ) {
+							set( { positionX: value } );
+						},
+					} ),
+				attrs.useCustomPosition &&
+					el( RangeControl, {
+						key: "positionY",
+						label: __( "Position Y (vh)", "capixel-components" ),
+						value: attrs.positionY,
+						min: 0,
+						max: 100,
+						step: 0.5,
+						onChange: function ( value ) {
+							set( { positionY: value } );
+						},
+					} ),
 			] );
 
 			var buttonsPanel = el( PanelBody, { title: __( "Buttons", "capixel-components" ), key: "buttons", initialOpen: false }, [
@@ -317,7 +361,7 @@
 						} ),
 					el(
 						"div",
-						{ className: "pixelcore-hero__content cp-container", key: "content", style: { maxWidth: attrs.maxWidth + "px" } },
+						{ className: "pixelcore-hero__content cp-container", key: "content", style: contentStyle },
 						[
 							el( RichText, {
 								key: "title",

@@ -20,13 +20,20 @@ $button_text = $attributes['buttonText'] ?? '';
 $button_url  = $attributes['buttonUrl'] ?? '';
 $button2_text = $attributes['button2Text'] ?? '';
 $button2_url  = $attributes['button2Url'] ?? '';
-$layout       = $attributes['layout'] ?? 'center';
-$background   = $attributes['backgroundColor'] ?? '';
+$layout        = $attributes['layout'] ?? 'center';
+$background    = $attributes['backgroundColor'] ?? '';
+$border_radius = (int) ( $attributes['borderRadius'] ?? 24 );
+
+$wrapper_style = array( 'border-radius:' . $border_radius . 'px' );
+
+if ( $background ) {
+	$wrapper_style[] = 'background-color:' . esc_attr( $background );
+}
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'pixelcore-cta pixelcore-cta--' . sanitize_html_class( $layout ),
-		'style' => $background ? 'background-color:' . esc_attr( $background ) : '',
+		'style' => implode( ';', $wrapper_style ),
 	)
 );
 

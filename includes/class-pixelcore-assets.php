@@ -29,7 +29,7 @@ class PixelCore_Assets {
 	const DEBUG_HANDLE      = 'pixelcore-debug';
 	const EDITOR_SHARED_HANDLE = 'pixelcore-editor-shared';
 
-	const GSAP_VERSION = '3.13.0';
+	const GSAP_VERSION = '3.15.0';
 
 	/**
 	 * Versión de cache-busting para un archivo propio del plugin.

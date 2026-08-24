@@ -66,10 +66,13 @@
 	}
 
 	&--align-left {
+		justify-content: flex-start;
 		text-align: left;
 
 		.pixelcore-hero__content {
 			margin-inline: 0;
+			padding-left: v.$hero-align-padding;
+			padding-right: v.$hero-align-padding;
 		}
 
 		.pixelcore-hero__description {
@@ -82,11 +85,14 @@
 	}
 
 	&--align-right {
+		justify-content: flex-end;
 		text-align: right;
 
 		.pixelcore-hero__content {
 			margin-inline: 0 0;
 			margin-left: auto;
+			padding-left: v.$hero-align-padding;
+			padding-right: v.$hero-align-padding;
 		}
 
 		.pixelcore-hero__description {
@@ -102,5 +108,14 @@
 	// Sin media de fondo: vuelve a los colores de texto normales del theme.
 	&--no-media {
 		color: v.$color-text;
+	}
+
+	// Posición libre: left/top en vw/vh vienen inline (ver render.php e index.js).
+	// Se anula el padding de align-left/right para que las coordenadas sean exactas.
+	&--custom-position {
+		.pixelcore-hero__content {
+			padding-left: 0;
+			padding-right: 0;
+		}
 	}
 }

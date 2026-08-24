@@ -36,7 +36,10 @@ $button_target   = ! empty( $attributes['buttonTarget'] );
 $button2_text    = $attributes['button2Text'] ?? '';
 $button2_url     = $attributes['button2Url'] ?? '';
 $button2_target  = ! empty( $attributes['button2Target'] );
-$content_align   = $attributes['contentAlign'] ?? 'center';
+$content_align      = $attributes['contentAlign'] ?? 'center';
+$use_custom_position = ! empty( $attributes['useCustomPosition'] );
+$position_x         = (float) ( $attributes['positionX'] ?? 0 );
+$position_y         = (float) ( $attributes['positionY'] ?? 0 );
 $max_width       = (int) ( $attributes['maxWidth'] ?? 800 );
 $min_height      = $attributes['minHeight'] ?? '70vh';
 $background      = $attributes['backgroundColor'] ?? '';
@@ -44,6 +47,10 @@ $overlay_color   = $attributes['overlayColor'] ?? '#000000';
 $overlay_opacity = (int) ( $attributes['overlayOpacity'] ?? 40 );
 
 $wrapper_classes = array( 'pixelcore-hero', 'pixelcore-hero--align-' . sanitize_html_class( $content_align ) );
+
+if ( $use_custom_position ) {
+	$wrapper_classes[] = 'pixelcore-hero--custom-position';
+}
 
 if ( empty( $media_url ) ) {
 	$wrapper_classes[] = 'pixelcore-hero--no-media';
@@ -77,7 +84,7 @@ $animation_attrs = capixel_animation_attributes( $attributes['animation'] ?? arr
 		<div class="pixelcore-hero__overlay" style="background-color:<?php echo esc_attr( $overlay_color ); ?>;opacity:<?php echo esc_attr( $overlay_opacity / 100 ); ?>"></div>
 	<?php endif; ?>
 
-	<div class="pixelcore-hero__content cp-container" style="max-width:<?php echo esc_attr( $max_width ); ?>px">
+	<div class="pixelcore-hero__content cp-container" style="max-width:<?php echo esc_attr( $max_width ); ?>px<?php echo $use_custom_position ? ';position:absolute;left:' . esc_attr( $position_x ) . 'vw;top:' . esc_attr( $position_y ) . 'vh;margin:0' : ''; ?>">
 		<?php if ( $title ) : ?>
 			<<?php echo esc_html( $title_tag ); ?>
 				class="pixelcore-hero__title cp-h1"
