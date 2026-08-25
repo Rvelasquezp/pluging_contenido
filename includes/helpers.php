@@ -50,6 +50,18 @@ function capixel_get_animation_presets() {
 }
 
 /**
+ * Devuelve la lista de tipos de layout disponibles para el bloque Gallery.
+ *
+ * Filtrable vía `capixel_gallery_layouts` — usa ese filtro para añadir un
+ * tipo de layout nuevo desde un theme/plugin externo.
+ *
+ * @return array<string, array> Layouts indexados por slug.
+ */
+function capixel_get_gallery_layouts() {
+	return PixelCore_Gallery::get_layouts();
+}
+
+/**
  * Lee un ajuste guardado en Settings → PixelCore Components.
  *
  * @param string $key     Clave del ajuste (ver PixelCore_Settings::defaults()).
@@ -171,6 +183,39 @@ function capixel_css_vars_attribute( $vars ) {
 	}
 
 	return $declarations ? ' style="' . implode( ';', $declarations ) . '"' : '';
+}
+
+/**
+ * Convierte un color hex (#rgb o #rrggbb) + opacidad (0-100) a "rgba(...)".
+ * Usado por el overlay de descripción del bloque Gallery, donde el usuario
+ * elige el color de fondo y la opacidad por separado (dos controles nativos)
+ * en vez de un color picker con canal alfa custom.
+ *
+ * @param string $hex     Color en formato #rgb o #rrggbb. Cadena vacía → fallback negro.
+ * @param int    $opacity Opacidad de 0 a 100.
+ * @return string Ej. "rgba(0,0,0,0.6)".
+ */
+function capixel_hex_to_rgba( $hex, $opacity = 60 ) {
+	$hex = trim( (string) $hex );
+
+	if ( '' === $hex || ! preg_match( '/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i', $hex, $matches ) ) {
+		$hex = '#000000';
+	} else {
+		$hex = '#' . $matches[1];
+	}
+
+	$hex = ltrim( $hex, '#' );
+
+	if ( 3 === strlen( $hex ) ) {
+		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+	}
+
+	$r = hexdec( substr( $hex, 0, 2 ) );
+	$g = hexdec( substr( $hex, 2, 2 ) );
+	$b = hexdec( substr( $hex, 4, 2 ) );
+	$a = max( 0, min( 100, (int) $opacity ) ) / 100;
+
+	return sprintf( 'rgba(%d,%d,%d,%s)', $r, $g, $b, $a );
 }
 
 /**

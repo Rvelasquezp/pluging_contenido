@@ -26,7 +26,7 @@ class PixelCore_Blocks {
 	 *
 	 * @var string[]
 	 */
-	const CORE_COMPONENTS = array( 'hero', 'card', 'accordion', 'accordion-item', 'cta' );
+	const CORE_COMPONENTS = array( 'hero', 'card', 'accordion', 'accordion-item', 'cta', 'gallery' );
 
 	/**
 	 * Hooks de arranque.

@@ -1,0 +1,41 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "pixelcore/gallery",
+	"title": "PixelCore Gallery",
+	"category": "pixelcore",
+	"icon": "format-gallery",
+	"description": "Galería de imágenes configurable: grid, masonry, justified, carousel, horizontal, vertical, thumbnail o fullscreen, con lightbox opcional.",
+	"textdomain": "capixel-components",
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"customClassName": true,
+		"align": [ "wide", "full" ]
+	},
+	"attributes": {
+		"images": { "type": "array", "default": [] },
+		"galleryType": { "type": "string", "default": "grid" },
+		"columns": {
+			"type": "object",
+			"default": { "desktop": 3, "tablet": 2, "mobile": 1 }
+		},
+		"gap": { "type": "number", "default": 16 },
+		"lightbox": { "type": "boolean", "default": true },
+		"captionTextColor": { "type": "string", "default": "" },
+		"captionFontSize": { "type": "string", "default": "" },
+		"captionBgColor": { "type": "string", "default": "" },
+		"captionBgOpacity": { "type": "number", "default": 60 },
+		"captionTextAlign": { "type": "string", "default": "left" },
+		"captionPosition": { "type": "string", "default": "bottom" },
+		"animation": {
+			"type": "object",
+			"default": { "preset": "none", "trigger": "scroll" }
+		}
+	},
+	"style": "pixelcore-css",
+	"editorStyle": "pixelcore-editor-css",
+	"viewScript": "pixelcore-gallery-core",
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

@@ -37,6 +37,7 @@ class PixelCore_Plugin {
 
 		( new PixelCore_Assets() )->init();
 		( new PixelCore_Blocks() )->init();
+		( new PixelCore_Gallery() )->init();
 		( new PixelCore_Settings() )->init();
 		( new PixelCore_Debug() )->init();
 	}

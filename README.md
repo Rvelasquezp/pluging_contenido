@@ -1,6 +1,6 @@
 # PixelCore Components
 
-Mini-framework de componentes Gutenberg reutilizables (Hero, Card, Accordion/FAQ, CTA) con un sistema de animaciones GSAP + ScrollTrigger integrado, design system SCSS y utility classes. Pensado para instalarse tal cual en cualquier proyecto WordPress nuevo.
+Mini-framework de componentes Gutenberg reutilizables (Hero, Card, Accordion/FAQ, CTA, Gallery) con un sistema de animaciones GSAP + ScrollTrigger integrado, design system SCSS y utility classes. Pensado para instalarse tal cual en cualquier proyecto WordPress nuevo.
 
 ## Instalación
 
@@ -8,7 +8,7 @@ Mini-framework de componentes Gutenberg reutilizables (Hero, Card, Accordion/FAQ
 2. Activa **PixelCore Components** desde Plugins → Instaladas (o `wp plugin activate pixelcore-components`).
 3. No requiere `npm install` ni build step para funcionar: el CSS ya viene compilado en `assets/css/`, el JS ya viene minificado en `js/dist/`, y GSAP viene vendorizado en `assets/vendor/gsap/`.
 4. Ve a **PixelCore → Settings** para ajustar GSAP/ScrollTrigger/ScrollSmoother, utility classes y performance.
-5. En el editor de bloques, busca la categoría **PixelCore** e inserta Hero, Card, Accordion o CTA.
+5. En el editor de bloques, busca la categoría **PixelCore** e inserta Hero, Card, Accordion, CTA o Gallery.
 
 Si quieres modificar el design system, edita los archivos en `scss/` y recompílalos:
 
@@ -42,22 +42,31 @@ includes/                  Lógica PHP (una clase por responsabilidad)
   class-pixelcore-assets.php            Registro de CSS/JS/GSAP + carga condicional
   class-pixelcore-blocks.php            Descubre/registra bloques + capixel_register_component()
   class-pixelcore-animation-presets.php Presets/triggers/eases (fuente única de verdad)
+  class-pixelcore-gallery.php           Tipos de layout de Gallery (registry filtrable) + sus handles JS
   class-pixelcore-settings.php          Settings → PixelCore Components + PixelCore → Animation
   class-pixelcore-debug.php             Modo debug (solo manage_options)
   helpers.php                           Developer API (funciones capixel_*)
 blocks/                    Un bloque por carpeta: block.json, render.php, index.js, index.asset.php
-  hero/  card/  accordion/  accordion-item/  cta/
-  shared-animation-panel.js  Panel "Animation" del Inspector, compartido por los 5 bloques
+  hero/  card/  accordion/  accordion-item/  cta/  gallery/
+  shared-animation-panel.js  Panel "Animation" del Inspector, compartido por los bloques con animación
 scss/                       Design system (fuente). abstracts/ base/ utilities/ blocks/
+  blocks/_gallery.scss       Layouts grid/masonry/justified/carousel/horizontal/vertical/thumbnail/fullscreen
+  blocks/_gallery-lightbox.scss  Modal del lightbox (singleton)
 assets/
   css/                      pixelcore.css + pixelcore-editor.css (ya compilados)
-  vendor/gsap/              gsap.min.js, ScrollTrigger.min.js, ScrollSmoother.min.js (pinned 3.13.0)
+  vendor/gsap/              gsap.min.js, ScrollTrigger.min.js, ScrollSmoother.min.js (pinned 3.15.0)
 js/                         Motor de animaciones (fuente, sin build step)
   core.js                   Escanea data-cp-*, arma el tween, gsap.context() + cleanup
   animations/                fade.js scale.js slide.js parallax.js custom.js scroll.js
   accordion.js               Interactividad abrir/cerrar (no depende de GSAP)
   bootstrap.js                Llama a PixelCoreAnimations.init() al final de la cadena
   dist/pixelcore.min.js       Bundle minificado (fade+scale+slide+parallax+custom+scroll+accordion+bootstrap)
+  gallery/                   Motor del bloque Gallery (independiente del bundle de arriba)
+    core.js                   Registry de layouts (PixelCoreGallery.registerLayout) + wiring del lightbox
+    layouts/                   masonry.js justified.js carousel.js — cada uno se carga SOLO si esa
+                                instancia usa ese galleryType (ver render.php)
+    lightbox.js                Modal singleton: navegación, miniaturas, teclado, swipe — se carga
+                                solo si el bloque tiene "Lightbox" activado
 templates/                  Punto de extensión para partials PHP de futuros componentes
 ```
 
@@ -100,14 +109,35 @@ Filtros disponibles:
 | `capixel_animation_triggers` | Añadir triggers custom |
 | `capixel_animation_eases` | Añadir eases custom |
 | `capixel_component_settings` | Modificar los ajustes resueltos de un componente antes de renderizarlo |
+| `capixel_gallery_layouts` | Añadir un tipo de layout nuevo al bloque Gallery |
 
-Funciones públicas: `capixel_setting( $key, $default )`, `capixel_is_debug()`, `capixel_get_animation_presets()`.
+Funciones públicas: `capixel_setting( $key, $default )`, `capixel_is_debug()`, `capixel_get_animation_presets()`, `capixel_get_gallery_layouts()`.
 
 **JS** — usa el mismo motor desde tu propio código:
 
 ```js
 window.PixelCoreAnimations.registerPreset( "reveal-mask", function ( el, config ) {
   return window.PixelCoreAnimations.applyTrigger( el, config, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)" } );
+} );
+```
+
+Un tipo de layout de Gallery nuevo (ej. "coverflow") se suma igual — un filtro PHP para que aparezca en el `SelectControl` del editor, y (si necesita JS) tu propio módulo que se registra contra el mismo core:
+
+```php
+add_filter( 'capixel_gallery_layouts', function ( $layouts ) {
+    $layouts['coverflow'] = array(
+        'label'         => 'Coverflow',
+        'needs_columns' => false,
+        'needs_gap'     => true,
+        'js_handle'     => 'my-theme-gallery-coverflow', // registrado/encolado por tu propio código.
+    );
+    return $layouts;
+} );
+```
+
+```js
+window.PixelCoreGallery.registerLayout( "coverflow", function ( galleryEl ) {
+  // tu lógica — recibe el wrapper .pixelcore-gallery ya renderizado.
 } );
 ```
 
@@ -120,7 +150,8 @@ window.PixelCoreAnimations.registerPreset( "reveal-mask", function ( el, config 
 
 ## V1 — qué incluye
 
-Hero, Card, Accordion/FAQ (con InnerBlocks), CTA · presets Fade/Fade Up/Fade Down/Fade Left/Fade Right, Scale/Scale Up/Scale Down, Slide, Rotate, Parallax, Custom · triggers Load/Scroll/Hover/Click · controles responsive (tablet/mobile: disable, scrub, duration) · design system SCSS + utility classes (`cp-*`) · GSAP vendorizado (sin CDN) · carga condicional · Settings page · modo debug · Developer API.
+Hero, Card, Accordion/FAQ (con InnerBlocks), CTA, Gallery · presets Fade/Fade Up/Fade Down/Fade Left/Fade Right, Scale/Scale Up/Scale Down, Slide, Rotate, Parallax, Custom · triggers Load/Scroll/Hover/Click · controles responsive (tablet/mobile: disable, scrub, duration) · design system SCSS + utility classes (`cp-*`) · GSAP vendorizado (sin CDN) · carga condicional · Settings page · modo debug · Developer API.
 
-Fuera de alcance de V1 (mencionado en el brief original, pendiente para V2): Tabs, Testimonials, Gallery, y un editor visual de presets (por ahora se extienden vía el filtro `capixel_animation_presets`).
-# pluging_contenido
+**Gallery**: un solo bloque `pixelcore/gallery`, 8 tipos de layout (Grid, Masonry, Justified, Carousel, Horizontal, Vertical, Thumbnail, Fullscreen) seleccionables desde el editor sin cambiar de bloque, extensibles vía el filtro `capixel_gallery_layouts` sin tocar `render.php` ni el editor. Imágenes ilimitadas desde la Media Library (selección/subida múltiple, reemplazo, eliminación, reordenamiento por drag & drop), cada una con título/descripción/alt propios. Descripción como overlay flotante en hover (color, tamaño, fondo/opacidad, alineación y posición configurables desde el Inspector con controles nativos). Lightbox propio (no el nativo de `core/image`, que no soporta múltiples imágenes): navegación prev/next, miniaturas, teclado, swipe táctil — se carga como módulo aparte y **solo** si el bloque lo tiene activado. Cada tipo de layout con JS (masonry/justified/carousel) también se carga solo si esa instancia en particular lo usa.
+
+Fuera de alcance de V1 (mencionado en el brief original, pendiente para V2): Tabs, Testimonials, y un editor visual de presets (por ahora se extienden vía el filtro `capixel_animation_presets`).

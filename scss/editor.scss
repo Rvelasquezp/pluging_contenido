@@ -26,3 +26,65 @@
 .pixelcore-accordion-item .block-list-appender {
 	padding: v.$spacing-sm v.$spacing-lg v.$spacing-lg;
 }
+
+// Gallery — grilla de miniaturas editable (solo editor; el frontend usa
+// scss/blocks/_gallery.scss).
+.pixelcore-gallery-editor__grid {
+	display: grid;
+	grid-template-columns: repeat( auto-fill, minmax( 120px, 1fr ) );
+	gap: v.$spacing-sm;
+}
+
+.pixelcore-gallery-editor__item {
+	position: relative;
+	aspect-ratio: 1 / 1;
+	overflow: hidden;
+	border: 2px solid transparent;
+	border-radius: v.$radius-sm;
+	cursor: grab;
+
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	&.is-selected {
+		border-color: v.$color-secondary;
+	}
+
+	&:hover .pixelcore-gallery-editor__item-toolbar {
+		opacity: 1;
+	}
+}
+
+.pixelcore-gallery-editor__caption-dot {
+	position: absolute;
+	top: v.$spacing-xs;
+	left: v.$spacing-xs;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: v.$color-secondary;
+}
+
+.pixelcore-gallery-editor__item-toolbar {
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	display: flex;
+	justify-content: center;
+	gap: 2px;
+	padding: 2px;
+	background-color: rgba( 0, 0, 0, 0.55 );
+	opacity: 0;
+	transition: opacity v.$transition-fast;
+
+	.components-button {
+		color: #fff;
+	}
+}
+
+.pixelcore-gallery-editor__add {
+	margin-top: v.$spacing-sm;
+}

@@ -43,6 +43,7 @@ require_once PIXELCORE_PATH . 'includes/helpers.php';
 require_once PIXELCORE_PATH . 'includes/class-pixelcore-animation-presets.php';
 require_once PIXELCORE_PATH . 'includes/class-pixelcore-assets.php';
 require_once PIXELCORE_PATH . 'includes/class-pixelcore-blocks.php';
+require_once PIXELCORE_PATH . 'includes/class-pixelcore-gallery.php';
 require_once PIXELCORE_PATH . 'includes/class-pixelcore-settings.php';
 require_once PIXELCORE_PATH . 'includes/class-pixelcore-debug.php';
 require_once PIXELCORE_PATH . 'includes/class-pixelcore-plugin.php';

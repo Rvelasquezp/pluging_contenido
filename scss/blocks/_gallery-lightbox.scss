@@ -1,0 +1,192 @@
+// -----------------------------------------------------------------------------
+// PixelCore — Gallery Lightbox
+//
+// Singleton inyectado una sola vez en <body> por js/gallery/lightbox.js,
+// sin importar cuántos bloques Gallery haya en la página.
+// -----------------------------------------------------------------------------
+
+@use "../abstracts/variables" as v;
+@use "../abstracts/mixins" as m;
+
+// Evita el scroll de fondo mientras el lightbox está abierto.
+html.pixelcore-lightbox-open {
+	overflow: hidden;
+}
+
+.pixelcore-lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	visibility: hidden;
+	opacity: 0;
+	transition: opacity v.$transition-base, visibility v.$transition-base;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+
+	&.is-open {
+		visibility: visible;
+		opacity: 1;
+	}
+
+	&__backdrop {
+		position: absolute;
+		inset: 0;
+		background-color: rgba( 0, 0, 0, 0.92 );
+	}
+
+	&__close,
+	&__nav {
+		position: absolute;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 0;
+		border-radius: v.$radius-pill;
+		background-color: rgba( 255, 255, 255, 0.12 );
+		color: #fff;
+		cursor: pointer;
+		transition: background-color v.$transition-fast;
+
+		&:hover {
+			background-color: rgba( 255, 255, 255, 0.24 );
+		}
+	}
+
+	&__close {
+		top: v.$spacing-lg;
+		right: v.$spacing-lg;
+		width: 2.75rem;
+		height: 2.75rem;
+		font-size: 1.75rem;
+		line-height: 1;
+	}
+
+	&__nav {
+		top: 45%;
+		width: 3rem;
+		height: 3rem;
+		font-size: 2rem;
+		line-height: 1;
+		transform: translateY( -50% );
+
+		&--prev {
+			left: v.$spacing-lg;
+		}
+
+		&--next {
+			right: v.$spacing-lg;
+		}
+	}
+
+	&__stage {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		max-width: min( 92vw, 1400px );
+		max-height: 72vh;
+		margin: 0 v.$spacing-xl;
+	}
+
+	&__image {
+		max-width: 100%;
+		max-height: 72vh;
+		object-fit: contain;
+		border-radius: v.$radius-sm;
+	}
+
+	&__caption {
+		max-width: 640px;
+		margin-top: v.$spacing-md;
+		color: #fff;
+		text-align: center;
+	}
+
+	&__caption-title {
+		font-weight: 600;
+	}
+
+	&__caption-desc {
+		margin-top: v.$spacing-xs;
+		opacity: 0.85;
+		font-size: v.$font-size-sm;
+	}
+
+	&__thumbs {
+		display: flex;
+		gap: v.$spacing-sm;
+		max-width: 92vw;
+		margin-top: v.$spacing-lg;
+		padding: v.$spacing-xs;
+		overflow-x: auto;
+	}
+
+	&__thumb {
+		flex: 0 0 auto;
+		width: 4rem;
+		height: 4rem;
+		padding: 0;
+		border: 2px solid transparent;
+		border-radius: v.$radius-sm;
+		overflow: hidden;
+		cursor: pointer;
+		opacity: 0.6;
+		transition: opacity v.$transition-fast, border-color v.$transition-fast;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		&:hover {
+			opacity: 0.85;
+		}
+
+		&.is-active {
+			opacity: 1;
+			border-color: v.$color-secondary;
+		}
+	}
+
+	@include m.mobile {
+		&__close {
+			top: v.$spacing-sm;
+			right: v.$spacing-sm;
+			width: 2.25rem;
+			height: 2.25rem;
+		}
+
+		&__nav {
+			width: 2.25rem;
+			height: 2.25rem;
+			font-size: 1.5rem;
+		}
+
+		&__nav--prev {
+			left: v.$spacing-sm;
+		}
+
+		&__nav--next {
+			right: v.$spacing-sm;
+		}
+
+		&__thumb {
+			width: 2.75rem;
+			height: 2.75rem;
+		}
+
+		&__thumbs {
+			gap: v.$spacing-xs;
+			margin-top: v.$spacing-sm;
+		}
+	}
+}
