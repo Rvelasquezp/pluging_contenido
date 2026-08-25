@@ -41,7 +41,33 @@
 		'</g>' +
 	'</svg>';
 
+	// Margen chico para redondeo de sub-pixel al comparar contra los bordes
+	// del scroll (distintos navegadores devuelven scrollWidth/clientWidth
+	// con decimales ligeramente distintos).
+	var EDGE_EPSILON = 2;
+
+	function isAtEnd( track ) {
+		return track.scrollLeft + track.clientWidth >= track.scrollWidth - EDGE_EPSILON;
+	}
+
+	function isAtStart( track ) {
+		return track.scrollLeft <= EDGE_EPSILON;
+	}
+
+	// Carrusel infinito: en vez de detenerse en los extremos, "next" desde
+	// la última imagen vuelve a la primera y "prev" desde la primera salta
+	// a la última.
 	function scrollByOne( track, direction ) {
+		if ( direction > 0 && isAtEnd( track ) ) {
+			track.scrollTo( { left: 0, behavior: "smooth" } );
+			return;
+		}
+
+		if ( direction < 0 && isAtStart( track ) ) {
+			track.scrollTo( { left: track.scrollWidth - track.clientWidth, behavior: "smooth" } );
+			return;
+		}
+
 		var item = track.querySelector( ".pixelcore-gallery__item" );
 		var gap = parseInt( getComputedStyle( track ).getPropertyValue( "--pc-gallery-gap" ), 10 ) || 16;
 		var amount = item ? item.getBoundingClientRect().width + gap : track.clientWidth * 0.8;
