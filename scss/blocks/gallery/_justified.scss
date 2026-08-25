@@ -1,0 +1,20 @@
+// PixelCore Gallery — layout "justified" (js/gallery/layouts/justified.js
+// setea flex-basis + height por item, ya calculados a partir del aspect
+// ratio real de cada imagen — por eso el height:100% del default de
+// _base.scss es correcto aquí, no hace falta anularlo).
+
+.pixelcore-gallery--justified {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var( --pc-gallery-gap );
+}
+
+.pixelcore-gallery--justified .pixelcore-gallery__item {
+	flex: 0 0 auto;
+}
+
+// Fallback mientras el JS no ha corrido todavía.
+.pixelcore-gallery--justified:not( .pixelcore-gallery--justified-js ) .pixelcore-gallery__item {
+	flex-basis: calc( 33.333% - var( --pc-gallery-gap ) );
+	aspect-ratio: 4 / 3;
+}

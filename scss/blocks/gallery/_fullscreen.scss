@@ -1,0 +1,11 @@
+// PixelCore Gallery — layout "fullscreen". CSS puro.
+
+.pixelcore-gallery--fullscreen {
+	display: flex;
+	flex-direction: column;
+}
+
+.pixelcore-gallery--fullscreen .pixelcore-gallery__item {
+	min-height: 100vh;
+	border-radius: 0;
+}

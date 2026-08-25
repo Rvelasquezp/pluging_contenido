@@ -1,0 +1,16 @@
+// PixelCore Gallery — layout "horizontal". CSS puro (scroll nativo).
+
+.pixelcore-gallery--horizontal {
+	display: flex;
+	flex-direction: row;
+	overflow-x: auto;
+	gap: var( --pc-gallery-gap );
+	scroll-snap-type: x proximity;
+}
+
+.pixelcore-gallery--horizontal .pixelcore-gallery__item {
+	flex: 0 0 auto;
+	width: min( 70vw, 420px );
+	aspect-ratio: 4 / 3;
+	scroll-snap-align: start;
+}

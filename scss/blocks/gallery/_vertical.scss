@@ -1,0 +1,11 @@
+// PixelCore Gallery — layout "vertical". CSS puro.
+
+.pixelcore-gallery--vertical {
+	display: flex;
+	flex-direction: column;
+	gap: var( --pc-gallery-gap );
+}
+
+.pixelcore-gallery--vertical .pixelcore-gallery__item {
+	aspect-ratio: 16 / 9;
+}

@@ -57,10 +57,11 @@ class PixelCore_Gallery {
 				'js_handle'     => self::JUSTIFIED_HANDLE,
 			),
 			'carousel'   => array(
-				'label'         => __( 'Carousel / Slider', 'capixel-components' ),
-				'needs_columns' => false,
-				'needs_gap'     => true,
-				'js_handle'     => self::CAROUSEL_HANDLE,
+				'label'             => __( 'Carousel / Slider', 'capixel-components' ),
+				'needs_columns'     => false,
+				'needs_gap'         => true,
+				'needs_arrow_color' => true,
+				'js_handle'         => self::CAROUSEL_HANDLE,
 			),
 			'horizontal' => array(
 				'label'         => __( 'Horizontal Gallery', 'capixel-components' ),
@@ -151,10 +152,11 @@ class PixelCore_Gallery {
 
 		foreach ( self::get_layouts() as $slug => $layout ) {
 			$layouts[] = array(
-				'value'        => $slug,
-				'label'        => $layout['label'],
-				'needsColumns' => ! empty( $layout['needs_columns'] ),
-				'needsGap'     => ! empty( $layout['needs_gap'] ),
+				'value'           => $slug,
+				'label'           => $layout['label'],
+				'needsColumns'    => ! empty( $layout['needs_columns'] ),
+				'needsGap'        => ! empty( $layout['needs_gap'] ),
+				'needsArrowColor' => ! empty( $layout['needs_arrow_color'] ),
 			);
 		}
 

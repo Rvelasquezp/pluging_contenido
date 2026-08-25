@@ -49,16 +49,28 @@
 		var row = [];
 		var rowAspectSum = 0;
 
+		// Alto de la última fila COMPLETA (justificada al ancho real del
+		// contenedor). Una fila final incompleta (menos imágenes de las que
+		// entrarían) lo usa como referencia en vez de TARGET_ROW_HEIGHT fijo
+		// — si no, casi siempre queda visiblemente más alta que las filas
+		// anteriores (que se comprimen para llenar el ancho), porque una
+		// fila con pocas imágenes necesitaría ESTIRARSE de más para llegar a
+		// ocupar todo el ancho, y eso se ve peor que dejarla un poco corta.
+		var lastCompletedRowHeight = TARGET_ROW_HEIGHT;
+
 		function flushRow( isLast ) {
 			if ( ! row.length ) {
 				return;
 			}
 
-			var rowHeight = TARGET_ROW_HEIGHT;
+			var rowHeight;
 
-			if ( ! isLast ) {
+			if ( isLast ) {
+				rowHeight = lastCompletedRowHeight;
+			} else {
 				var availableWidth = containerWidth - gap * ( row.length - 1 );
 				rowHeight = availableWidth / rowAspectSum;
+				lastCompletedRowHeight = rowHeight;
 			}
 
 			row.forEach( function ( entry ) {

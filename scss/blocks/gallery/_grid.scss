@@ -1,0 +1,21 @@
+// PixelCore Gallery — layout "grid". CSS puro (sin JS).
+
+@use "../../abstracts/mixins" as m;
+
+.pixelcore-gallery--grid {
+	display: grid;
+	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
+	gap: var( --pc-gallery-gap );
+
+	@include m.tablet {
+		grid-template-columns: repeat( var( --pc-gallery-cols-tablet ), 1fr );
+	}
+
+	@include m.mobile {
+		grid-template-columns: repeat( var( --pc-gallery-cols-mobile ), 1fr );
+	}
+}
+
+.pixelcore-gallery--grid .pixelcore-gallery__item {
+	aspect-ratio: 4 / 3;
+}

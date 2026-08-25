@@ -1,0 +1,78 @@
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "carousel" (js/gallery/layouts/carousel.js
+// envuelve los items en .pixelcore-gallery__track y agrega los botones
+// prev/next como HERMANOS del track, no hijos — así quedan fijos aunque el
+// track scrollee horizontalmente. El scroll+snap es CSS puro sobre el track).
+// -----------------------------------------------------------------------------
+
+@use "../../abstracts/variables" as v;
+
+.pixelcore-gallery--carousel {
+	position: relative;
+}
+
+.pixelcore-gallery__track {
+	display: flex;
+	gap: var( --pc-gallery-gap );
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	padding-bottom: v.$spacing-sm;
+}
+
+// Respaldo mientras JS no ha corrido (o si el visitante lo tiene
+// desactivado): el track todavía no existe, así que el scroll+snap va
+// directo sobre el wrapper. Sin botones prev/next en este caso — el scroll
+// nativo (rueda, swipe, teclado con el wrapper enfocado) sigue funcionando.
+.pixelcore-gallery--carousel:not( .pixelcore-gallery--carousel-js ) {
+	display: flex;
+	gap: var( --pc-gallery-gap );
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	padding-bottom: v.$spacing-sm;
+}
+
+.pixelcore-gallery--carousel .pixelcore-gallery__item {
+	flex: 0 0 auto;
+	width: min( 80vw, 480px );
+	aspect-ratio: 4 / 3;
+	scroll-snap-align: start;
+}
+
+.pixelcore-gallery__nav {
+	position: absolute;
+	top: 50%;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform: translateY( -50% );
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+
+	svg {
+		display: block;
+		width: 2.75rem;
+		height: 2.75rem;
+	}
+
+	.arrow {
+		fill: var( --pc-gallery-arrow-color, #495156 );
+		transition: fill v.$transition-fast;
+	}
+
+	&:hover .arrow {
+		fill: var( --pc-gallery-arrow-hover-color, #f97316 );
+	}
+
+	&--prev {
+		left: v.$spacing-md;
+	}
+
+	&--next {
+		right: v.$spacing-md;
+	}
+}

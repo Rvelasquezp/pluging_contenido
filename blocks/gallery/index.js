@@ -47,7 +47,7 @@
 		{ value: "grid", label: "Grid", needsColumns: true, needsGap: true },
 		{ value: "masonry", label: "Masonry", needsColumns: true, needsGap: true },
 		{ value: "justified", label: "Justified Gallery", needsColumns: false, needsGap: true },
-		{ value: "carousel", label: "Carousel / Slider", needsColumns: false, needsGap: true },
+		{ value: "carousel", label: "Carousel / Slider", needsColumns: false, needsGap: true, needsArrowColor: true },
 		{ value: "horizontal", label: "Horizontal Gallery", needsColumns: false, needsGap: true },
 		{ value: "vertical", label: "Vertical Gallery", needsColumns: false, needsGap: true },
 		{ value: "thumbnail", label: "Thumbnail Gallery", needsColumns: true, needsGap: true },
@@ -222,6 +222,29 @@
 					},
 				} )
 			);
+
+			if ( currentLayout.needsArrowColor ) {
+				galleryPanelChildren.push(
+					el( "p", { key: "arrowColorLabel" }, __( "Arrow color", "capixel-components" ) ),
+					el( ColorPalette, {
+						key: "arrowColor",
+						colors: PALETTE,
+						value: attrs.carouselArrowColor,
+						onChange: function ( value ) {
+							set( { carouselArrowColor: value || "#495156" } );
+						},
+					} ),
+					el( "p", { key: "arrowHoverColorLabel" }, __( "Arrow hover color", "capixel-components" ) ),
+					el( ColorPalette, {
+						key: "arrowHoverColor",
+						colors: PALETTE,
+						value: attrs.carouselArrowHoverColor,
+						onChange: function ( value ) {
+							set( { carouselArrowHoverColor: value || "#f97316" } );
+						},
+					} )
+				);
+			}
 
 			var galleryPanel = el( PanelBody, { title: __( "Gallery Settings", "capixel-components" ), key: "gallery-settings" }, galleryPanelChildren );
 

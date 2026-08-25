@@ -1,0 +1,21 @@
+// PixelCore Gallery — layout "thumbnail". CSS puro (sin JS).
+
+@use "../../abstracts/mixins" as m;
+
+.pixelcore-gallery--thumbnail {
+	display: grid;
+	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
+	gap: var( --pc-gallery-gap );
+
+	@include m.tablet {
+		grid-template-columns: repeat( var( --pc-gallery-cols-tablet ), 1fr );
+	}
+
+	@include m.mobile {
+		grid-template-columns: repeat( var( --pc-gallery-cols-mobile ), 1fr );
+	}
+}
+
+.pixelcore-gallery--thumbnail .pixelcore-gallery__item {
+	aspect-ratio: 1 / 1;
+}

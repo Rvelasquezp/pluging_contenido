@@ -26,6 +26,8 @@ $caption_bg      = $attributes['captionBgColor'] ?? '';
 $caption_opacity = (int) ( $attributes['captionBgOpacity'] ?? 60 );
 $caption_align   = $attributes['captionTextAlign'] ?? 'left';
 $caption_position = $attributes['captionPosition'] ?? 'bottom';
+$arrow_color       = $attributes['carouselArrowColor'] ?? '#495156';
+$arrow_hover_color = $attributes['carouselArrowHoverColor'] ?? '#f97316';
 
 if ( empty( $images ) ) {
 	return;
@@ -53,6 +55,8 @@ $wrapper_style = array(
 	'--pc-gallery-cols-tablet:' . (int) $columns['tablet'],
 	'--pc-gallery-cols-mobile:' . (int) $columns['mobile'],
 	'--pc-gallery-gap:' . $gap . 'px',
+	'--pc-gallery-arrow-color:' . esc_attr( $arrow_color ),
+	'--pc-gallery-arrow-hover-color:' . esc_attr( $arrow_hover_color ),
 );
 
 // Datos para el lightbox: siempre a tamaño "full" (independiente del

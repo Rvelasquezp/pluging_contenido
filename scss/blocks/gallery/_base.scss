@@ -1,0 +1,115 @@
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — base compartida por TODOS los tipos de layout.
+//
+// Cada tipo vive en su propio archivo (_grid.scss, _masonry.scss, …) para
+// poder tocar/agregar uno sin rozar los demás. Este archivo solo define lo
+// que absolutamente todos comparten: el wrapper, el item, el trigger, y el
+// comportamiento POR DEFECTO de la imagen (pensado para cajas de
+// aspect-ratio fijo — grid/thumbnail/carousel/horizontal/vertical/
+// fullscreen). Masonry anula ese default explícitamente en _masonry.scss,
+// porque ahí es la caja la que se adapta a la imagen, no al revés.
+// -----------------------------------------------------------------------------
+
+@use "../../abstracts/variables" as v;
+@use "../../abstracts/mixins" as m;
+
+.pixelcore-gallery {
+	--pc-gallery-cols-desktop: 3;
+	--pc-gallery-cols-tablet: 2;
+	--pc-gallery-cols-mobile: 1;
+	--pc-gallery-gap: #{v.$spacing-md};
+
+	position: relative;
+	width: 100%;
+}
+
+.pixelcore-gallery__item {
+	position: relative;
+	overflow: hidden;
+	border-radius: v.$radius-sm;
+	background-color: v.$color-surface;
+}
+
+.pixelcore-gallery__trigger {
+	display: block;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	text-align: inherit;
+}
+
+// Especificidad a propósito: el reset global del plugin
+// ([class*="pixelcore-"] img, ver scss/base/_reset.scss) fuerza height:auto
+// y tiene MÁS especificidad que una sola clase (atributo+tag = 0,1,1 vs.
+// 0,1,0). Calificar con .pixelcore-gallery__item eleva esto a dos clases
+// (0,2,0), que sí le gana, sin depender del orden de @use.
+.pixelcore-gallery__item .pixelcore-gallery__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+// Overlay de descripción: absoluto, no afecta el tamaño/estructura de la
+// galería, oculto por defecto y visible en hover/focus. pointer-events:none
+// para que el click en cualquier parte del item siga abriendo el lightbox.
+.pixelcore-gallery__caption {
+	position: absolute;
+	inset-inline: 0;
+	display: flex;
+	flex-direction: column;
+	gap: v.$spacing-xs;
+	padding: v.$spacing-md;
+	background-color: var( --pc-gallery-caption-bg, rgba( 0, 0, 0, 0.6 ) );
+	color: var( --pc-gallery-caption-color, #fff );
+	font-size: var( --pc-gallery-caption-size, #{v.$font-size-sm} );
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity v.$transition-base;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery__item:hover .pixelcore-gallery__caption,
+.pixelcore-gallery__item:focus-within .pixelcore-gallery__caption {
+	opacity: 1;
+}
+
+.pixelcore-gallery__caption--top {
+	top: 0;
+}
+
+.pixelcore-gallery__caption--center {
+	top: 50%;
+	transform: translateY( -50% );
+}
+
+.pixelcore-gallery__caption--bottom {
+	bottom: 0;
+}
+
+.pixelcore-gallery__caption--align-left {
+	text-align: left;
+}
+
+.pixelcore-gallery__caption--align-center {
+	text-align: center;
+}
+
+.pixelcore-gallery__caption--align-right {
+	text-align: right;
+}
+
+.pixelcore-gallery__caption-title {
+	font-weight: 600;
+}
+
+.pixelcore-gallery__caption-desc {
+	@include m.line-clamp( 3 );
+	opacity: 0.9;
+}

@@ -1,0 +1,53 @@
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "masonry" (js/gallery/layouts/masonry.js agrega
+// .pixelcore-gallery__masonry-col y balancea los items por altura).
+//
+// A diferencia de grid/thumbnail/carousel (donde la CAJA manda y la imagen
+// se recorta con object-fit:cover), en masonry es la IMAGEN la que manda su
+// alto real — por eso anula el default de _base.scss.
+// -----------------------------------------------------------------------------
+
+@use "../../abstracts/mixins" as m;
+
+.pixelcore-gallery--masonry.pixelcore-gallery--masonry-js {
+	display: flex;
+	gap: var( --pc-gallery-gap );
+	align-items: flex-start;
+}
+
+.pixelcore-gallery__masonry-col {
+	display: flex;
+	flex: 1 1 0;
+	flex-direction: column;
+	gap: var( --pc-gallery-gap );
+	min-width: 0;
+}
+
+// Fallback mientras el JS no ha corrido todavía (o si el visitante tiene JS
+// desactivado): grid normal, PERO con align-items:start — el default de
+// CSS Grid es "stretch", que forzaría a todos los items de una misma fila a
+// la altura del más alto (recortando los demás) incluso antes de que
+// masonry.js llegue a reorganizarlos.
+.pixelcore-gallery--masonry:not( .pixelcore-gallery--masonry-js ) {
+	display: grid;
+	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
+	align-items: start;
+	gap: var( --pc-gallery-gap );
+
+	@include m.tablet {
+		grid-template-columns: repeat( var( --pc-gallery-cols-tablet ), 1fr );
+	}
+
+	@include m.mobile {
+		grid-template-columns: repeat( var( --pc-gallery-cols-mobile ), 1fr );
+	}
+}
+
+// Anula el default de _base.scss (height:100% + object-fit:cover, pensado
+// para cajas de aspect-ratio fijo): aquí la imagen debe conservar su alto
+// real según su propio ancho, sin recorte, para que las verticales se vean
+// más altas y las horizontales más bajas — masonry de verdad.
+.pixelcore-gallery--masonry .pixelcore-gallery__image {
+	height: auto;
+	object-fit: unset;
+}
