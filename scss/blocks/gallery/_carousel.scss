@@ -11,7 +11,15 @@
 	position: relative;
 }
 
-.pixelcore-gallery__track {
+// Ojo: .pixelcore-gallery__track también lo usa el layout "horizontal" (con
+// pin de GSAP, ver _horizontal.scss) — por eso esta regla va SCOPEADA a
+// --carousel. Sin el scope, el overflow-x:auto de acá le pega también al
+// track de horizontal, y como GSAP mueve ese track con un transform (no con
+// scroll nativo), el propio overflow:auto del track compite con el
+// transform: el track se vuelve su propio contenedor de scroll y solo se ve
+// lo que entra en su ancho, sin importar el transform externo — se ven las
+// primeras imágenes nomás, nunca las siguientes.
+.pixelcore-gallery--carousel .pixelcore-gallery__track {
 	display: flex;
 	gap: var( --pc-gallery-gap );
 	overflow-x: auto;
@@ -40,7 +48,7 @@
 	scroll-snap-align: start;
 }
 
-.pixelcore-gallery__nav {
+.pixelcore-gallery--carousel .pixelcore-gallery__nav {
 	position: absolute;
 	top: 50%;
 	z-index: 2;
@@ -67,12 +75,12 @@
 	&:hover .arrow {
 		fill: var( --pc-gallery-arrow-hover-color, #f97316 );
 	}
+}
 
-	&--prev {
-		left: v.$spacing-lg;
-	}
+.pixelcore-gallery--carousel .pixelcore-gallery__nav--prev {
+	left: v.$spacing-lg;
+}
 
-	&--next {
-		right: v.$spacing-lg;
-	}
+.pixelcore-gallery--carousel .pixelcore-gallery__nav--next {
+	right: v.$spacing-lg;
 }

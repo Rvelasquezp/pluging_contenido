@@ -1,4 +1,12 @@
-// PixelCore Gallery — layout "vertical". CSS puro.
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "vertical".
+//
+// Por defecto: lista vertical simple por CSS (funciona sin JS/GSAP). Si GSAP
+// + ScrollTrigger están disponibles, js/gallery/layouts/vertical.js apila
+// las imágenes exactamente una sobre otra (position:absolute + inset:0) y
+// las va revelando en secuencia con un timeline con scrub — en ese modo el
+// alto fijo de acá es lo que define cuánto se ve pineado.
+// -----------------------------------------------------------------------------
 
 .pixelcore-gallery--vertical {
 	display: flex;
@@ -8,4 +16,17 @@
 
 .pixelcore-gallery--vertical .pixelcore-gallery__item {
 	aspect-ratio: 16 / 9;
+}
+
+// -- Modo pin (GSAP ScrollTrigger) -------------------------------------------
+
+.pixelcore-gallery--vertical.pixelcore-gallery--vertical-pin {
+	position: relative;
+	display: block;
+	height: min( 80vh, 640px );
+	overflow: hidden;
+}
+
+.pixelcore-gallery--vertical-pin .pixelcore-gallery__item {
+	aspect-ratio: auto;
 }

@@ -1,4 +1,14 @@
-// PixelCore Gallery — layout "horizontal". CSS puro (scroll nativo).
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "horizontal".
+//
+// Por defecto: scroll horizontal nativo por CSS (funciona sin JS/GSAP).
+// Si GSAP + ScrollTrigger están disponibles, js/gallery/layouts/horizontal.js
+// envuelve los items en .pixelcore-gallery__track, agrega la clase
+// --horizontal-pin, y anima ese track con un tween con scrub — en ese modo
+// el scroll nativo se apaga (GSAP mueve el track, no el navegador).
+// -----------------------------------------------------------------------------
+
+@use "../../abstracts/variables" as v;
 
 .pixelcore-gallery--horizontal {
 	display: flex;
@@ -13,4 +23,21 @@
 	width: min( 70vw, 420px );
 	aspect-ratio: 4 / 3;
 	scroll-snap-align: start;
+}
+
+// -- Modo pin (GSAP ScrollTrigger) -------------------------------------------
+
+.pixelcore-gallery--horizontal.pixelcore-gallery--horizontal-pin {
+	overflow: hidden;
+	scroll-snap-type: none;
+}
+
+.pixelcore-gallery--horizontal-pin .pixelcore-gallery__track {
+	display: flex;
+	gap: var( --pc-gallery-gap );
+	will-change: transform;
+}
+
+.pixelcore-gallery--horizontal-pin .pixelcore-gallery__item {
+	scroll-snap-align: none;
 }

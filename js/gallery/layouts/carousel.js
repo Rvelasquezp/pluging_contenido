@@ -10,6 +10,15 @@
  * en un track aparte antes de agregar los botones como hermanos del track,
  * no hijos.
  *
+ * Loop infinito SIN salto visible: se clona la primera imagen y se agrega
+ * al final del track, y se clona la última y se agrega al principio. Así,
+ * al hacer "next" desde la última imagen real, el scroll avanza de forma
+ * natural hacia el clon (que se ve idéntico a la primera) — y en cuanto esa
+ * animación termina, se reposiciona instantáneamente (sin transición) sobre
+ * la imagen real correspondiente. Como el clon y la imagen real son
+ * visualmente iguales, ese salto instantáneo es imperceptible. Es la misma
+ * técnica que usan los carruseles infinitos "de verdad" (Swiper, Slick, etc).
+ *
  * @package PixelCore_Components
  */
 ( function ( window, document ) {
@@ -54,25 +63,59 @@
 		return track.scrollLeft <= EDGE_EPSILON;
 	}
 
-	// Carrusel infinito: en vez de detenerse en los extremos, "next" desde
-	// la última imagen vuelve a la primera y "prev" desde la primera salta
-	// a la última.
-	function scrollByOne( track, direction ) {
-		if ( direction > 0 && isAtEnd( track ) ) {
-			track.scrollTo( { left: 0, behavior: "smooth" } );
-			return;
-		}
+	function itemGap( track ) {
+		return parseInt( getComputedStyle( track ).getPropertyValue( "--pc-gallery-gap" ), 10 ) || 16;
+	}
 
-		if ( direction < 0 && isAtStart( track ) ) {
-			track.scrollTo( { left: track.scrollWidth - track.clientWidth, behavior: "smooth" } );
-			return;
-		}
-
+	function itemStep( track ) {
 		var item = track.querySelector( ".pixelcore-gallery__item" );
-		var gap = parseInt( getComputedStyle( track ).getPropertyValue( "--pc-gallery-gap" ), 10 ) || 16;
-		var amount = item ? item.getBoundingClientRect().width + gap : track.clientWidth * 0.8;
 
-		track.scrollBy( { left: amount * direction, behavior: "smooth" } );
+		return item ? item.getBoundingClientRect().width + itemGap( track ) : track.clientWidth * 0.8;
+	}
+
+	// Posición de scroll a la que hay que llevar el track para que "item"
+	// quede exactamente donde está ahora (usado para reposicionar sobre la
+	// imagen real después de haber scrolleado visualmente hasta su clon).
+	function scrollLeftFor( track, item ) {
+		var trackRect = track.getBoundingClientRect();
+		var itemRect = item.getBoundingClientRect();
+
+		return track.scrollLeft + ( itemRect.left - trackRect.left );
+	}
+
+	// Después de un scroll (animado), si terminamos mostrando el clon del
+	// extremo opuesto, reposiciona instantáneamente sobre la imagen real
+	// equivalente. Sin animación en este paso — por eso es invisible.
+	function fixLoopWhenSettled( track ) {
+		var done = false;
+
+		function fix() {
+			if ( done ) {
+				return;
+			}
+
+			done = true;
+			track.removeEventListener( "scrollend", fix );
+
+			if ( isAtEnd( track ) && track._pcRealFirst ) {
+				track.scrollLeft = scrollLeftFor( track, track._pcRealFirst );
+			} else if ( isAtStart( track ) && track._pcRealLast ) {
+				track.scrollLeft = scrollLeftFor( track, track._pcRealLast );
+			}
+		}
+
+		if ( "onscrollend" in window ) {
+			track.addEventListener( "scrollend", fix );
+		} else {
+			// Respaldo para navegadores sin soporte de "scrollend": un poco
+			// más que la duración típica del scroll suave nativo.
+			setTimeout( fix, 500 );
+		}
+	}
+
+	function scrollStep( track, direction ) {
+		track.scrollBy( { left: itemStep( track ) * direction, behavior: "smooth" } );
+		fixLoopWhenSettled( track );
 	}
 
 	function init( el ) {
@@ -83,6 +126,11 @@
 		el.classList.add( "pixelcore-gallery--carousel-js" );
 
 		var items = Array.prototype.slice.call( el.querySelectorAll( ".pixelcore-gallery__item" ) );
+
+		if ( ! items.length ) {
+			return;
+		}
+
 		var track = document.createElement( "div" );
 		track.className = "pixelcore-gallery__track";
 
@@ -91,6 +139,27 @@
 		} );
 
 		el.appendChild( track );
+
+		// Clones para el loop infinito (ver comentario de cabecera). Con una
+		// sola imagen no hay nada que clonar/loopear.
+		if ( items.length > 1 ) {
+			var firstClone = items[ 0 ].cloneNode( true );
+			var lastClone = items[ items.length - 1 ].cloneNode( true );
+
+			firstClone.setAttribute( "aria-hidden", "true" );
+			lastClone.setAttribute( "aria-hidden", "true" );
+
+			track.appendChild( firstClone );
+			track.insertBefore( lastClone, track.firstChild );
+
+			track._pcRealFirst = items[ 0 ];
+			track._pcRealLast = items[ items.length - 1 ];
+
+			// Arranca mostrando la primera imagen real (no el clon del
+			// último que quedó antepuesto) — sin animación, antes de que se
+			// vea nada.
+			track.scrollLeft = scrollLeftFor( track, track._pcRealFirst );
+		}
 
 		var prev = document.createElement( "button" );
 		prev.type = "button";
@@ -105,11 +174,11 @@
 		next.innerHTML = NEXT_SVG;
 
 		prev.addEventListener( "click", function () {
-			scrollByOne( track, -1 );
+			scrollStep( track, -1 );
 		} );
 
 		next.addEventListener( "click", function () {
-			scrollByOne( track, 1 );
+			scrollStep( track, 1 );
 		} );
 
 		// Hermanos del track, no hijos: así quedan fijos aunque el track

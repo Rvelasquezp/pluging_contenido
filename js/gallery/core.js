@@ -70,6 +70,29 @@
 		} );
 	}
 
+	// Alto de un header fijo/sticky del theme (si hay uno), sin hardcodear
+	// ningún selector — busca qué elemento está pintado en el borde superior
+	// de la pantalla y sube por sus ancestros buscando position:fixed/sticky.
+	// La usan los layouts con pin (horizontal, vertical): si el pin arranca
+	// en "top top" (y=0 del viewport) sin restar esto, el contenido pineado
+	// queda tapado detrás del header en vez de aparecer completo debajo.
+	function fixedHeaderOffset() {
+		var probe = document.elementFromPoint( Math.floor( window.innerWidth / 2 ), 0 );
+		var current = probe;
+
+		while ( current && current !== document.body && current !== document.documentElement ) {
+			var position = getComputedStyle( current ).position;
+
+			if ( "fixed" === position || "sticky" === position ) {
+				return current.getBoundingClientRect().height;
+			}
+
+			current = current.parentElement;
+		}
+
+		return 0;
+	}
+
 	function initGallery( galleryEl ) {
 		if ( galleryEl._pixelcoreGalleryInit ) {
 			return;
@@ -125,6 +148,7 @@
 		registerLayout: registerLayout,
 		init: init,
 		scan: scan,
+		fixedHeaderOffset: fixedHeaderOffset,
 	};
 
 	// A diferencia de js/core.js (animaciones), este init() NO se dispara

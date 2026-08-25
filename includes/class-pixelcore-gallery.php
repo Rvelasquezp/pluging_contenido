@@ -16,11 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class PixelCore_Gallery {
 
-	const CORE_HANDLE      = 'pixelcore-gallery-core';
-	const MASONRY_HANDLE   = 'pixelcore-gallery-masonry';
-	const JUSTIFIED_HANDLE = 'pixelcore-gallery-justified';
-	const CAROUSEL_HANDLE  = 'pixelcore-gallery-carousel';
-	const LIGHTBOX_HANDLE  = 'pixelcore-gallery-lightbox';
+	const CORE_HANDLE       = 'pixelcore-gallery-core';
+	const MASONRY_HANDLE    = 'pixelcore-gallery-masonry';
+	const JUSTIFIED_HANDLE  = 'pixelcore-gallery-justified';
+	const CAROUSEL_HANDLE   = 'pixelcore-gallery-carousel';
+	const HORIZONTAL_HANDLE = 'pixelcore-gallery-horizontal';
+	const VERTICAL_HANDLE   = 'pixelcore-gallery-vertical';
+	const LIGHTBOX_HANDLE   = 'pixelcore-gallery-lightbox';
 
 	/**
 	 * Hooks de arranque.
@@ -67,13 +69,23 @@ class PixelCore_Gallery {
 				'label'         => __( 'Horizontal Gallery', 'capixel-components' ),
 				'needs_columns' => false,
 				'needs_gap'     => true,
-				'js_handle'     => null,
+				// Con GSAP+ScrollTrigger disponibles, se "pinea" la sección y el
+				// scroll vertical mueve las imágenes en horizontal hasta la
+				// última, y ahí se despinea sola. Sin GSAP (ver
+				// register_assets()), degrada a scroll horizontal nativo por
+				// CSS — nunca se rompe, solo pierde el efecto.
+				'js_handle'     => self::HORIZONTAL_HANDLE,
 			),
 			'vertical'   => array(
 				'label'         => __( 'Vertical Gallery', 'capixel-components' ),
 				'needs_columns' => false,
 				'needs_gap'     => true,
-				'js_handle'     => null,
+				// Con GSAP+ScrollTrigger: se pinea el padre y las imágenes se
+				// van apilando una encima de otra (cada una "pasa por arriba"
+				// de la anterior) a medida que se scrollea, hasta despinear
+				// sola en la última. Sin GSAP, degrada a una lista vertical
+				// simple por CSS (ver register_assets() / _vertical.scss).
+				'js_handle'     => self::VERTICAL_HANDLE,
 			),
 			'thumbnail'  => array(
 				'label'         => __( 'Thumbnail Gallery', 'capixel-components' ),
@@ -140,6 +152,32 @@ class PixelCore_Gallery {
 		wp_register_script( self::JUSTIFIED_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/justified.js', array( self::CORE_HANDLE ), $this->asset_version( 'js/gallery/layouts/justified.js' ), true );
 		wp_register_script( self::CAROUSEL_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/carousel.js', array( self::CORE_HANDLE ), $this->asset_version( 'js/gallery/layouts/carousel.js' ), true );
 		wp_register_script( self::LIGHTBOX_HANDLE, PIXELCORE_URL . 'js/gallery/lightbox.js', array( self::CORE_HANDLE ), $this->asset_version( 'js/gallery/lightbox.js' ), true );
+
+		// El pin+scroll horizontal del layout "horizontal" necesita GSAP +
+		// ScrollTrigger. Se agregan como dependencia SOLO si ya están
+		// habilitados en Settings (mismo ajuste que usa el sistema de
+		// animaciones) — si el theme trae su propio GSAP y el usuario
+		// desactivó el vendorizado del plugin, horizontal.js igual carga,
+		// pero internamente detecta que no hay window.gsap/ScrollTrigger y
+		// degrada al scroll horizontal nativo por CSS en vez de fallar.
+		$horizontal_deps = array( self::CORE_HANDLE );
+
+		if ( PixelCore_Settings::get( 'enable_gsap' ) && PixelCore_Settings::get( 'enable_scrolltrigger' ) ) {
+			$horizontal_deps[] = PixelCore_Assets::ST_HANDLE;
+		}
+
+		wp_register_script( self::HORIZONTAL_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/horizontal.js', $horizontal_deps, $this->asset_version( 'js/gallery/layouts/horizontal.js' ), true );
+
+		// Mismo criterio que "horizontal": el pin apilado de "vertical"
+		// necesita GSAP + ScrollTrigger, solo como dependencia si están
+		// habilitados en Settings.
+		$vertical_deps = array( self::CORE_HANDLE );
+
+		if ( PixelCore_Settings::get( 'enable_gsap' ) && PixelCore_Settings::get( 'enable_scrolltrigger' ) ) {
+			$vertical_deps[] = PixelCore_Assets::ST_HANDLE;
+		}
+
+		wp_register_script( self::VERTICAL_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/vertical.js', $vertical_deps, $this->asset_version( 'js/gallery/layouts/vertical.js' ), true );
 	}
 
 	/**
