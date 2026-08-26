@@ -133,6 +133,57 @@
 		}, 200 );
 	}
 
+	// Algunos themes encogen su header a medida que se scrollea (propio tween
+	// con scroll, no un resize). PixelCoreGallery.fixedHeaderOffset() se usa
+	// para calcular dónde debe "aterrizar" un pin (horizontal/vertical) justo
+	// debajo del header — pero ScrollTrigger solo re-evalúa esos valores en
+	// refresh() (carga, resize), no en cada scroll. Si el header todavía
+	// estaba en su tamaño grande cuando se creó el pin, y para cuando el
+	// scroll real llega a esa galería el header ya se encogió, el pin queda
+	// calculado con una medida vieja — sobra espacio arriba de la sección.
+	// Este listener detecta cuando el alto del header REALMENTE cambió y
+	// fuerza un refresh para que los pines se recalculen contra la medida
+	// actual.
+	//
+	// Dos resguardos importantes (su ausencia causaba un salto visible al
+	// cruzar entre secciones pineadas, ej. horizontal → vertical):
+	// 1) Redondea a pixel entero antes de comparar — getBoundingClientRect()
+	//    devuelve sub-pixeles que varían solo por redondeo del navegador al
+	//    scrollear, no porque el header realmente haya cambiado de tamaño;
+	//    sin el redondeo, CADA scroll disparaba un refresh() (recalcula
+	//    TODOS los pines de la página, no solo el que está a la vista).
+	// 2) Deja de escuchar en cuanto el valor se mantiene estable dos
+	//    veces seguidas — el header solo encoge una vez, cerca del tope de
+	//    la página; una vez asentado no hace falta seguir revisando por el
+	//    resto del scroll.
+	var lastHeaderOffset = null;
+	var stableHeaderChecks = 0;
+	var headerWatchTimer = null;
+
+	function watchHeaderOffset() {
+		clearTimeout( headerWatchTimer );
+		headerWatchTimer = setTimeout( function () {
+			var current = Math.round( fixedHeaderOffset() );
+
+			if ( current !== lastHeaderOffset ) {
+				lastHeaderOffset = current;
+				stableHeaderChecks = 0;
+
+				if ( window.ScrollTrigger ) {
+					window.ScrollTrigger.refresh();
+				}
+
+				return;
+			}
+
+			stableHeaderChecks++;
+
+			if ( stableHeaderChecks >= 2 ) {
+				window.removeEventListener( "scroll", watchHeaderOffset );
+			}
+		}, 150 );
+	}
+
 	function init() {
 		if ( initialized ) {
 			return;
@@ -140,8 +191,11 @@
 
 		initialized = true;
 
+		lastHeaderOffset = Math.round( fixedHeaderOffset() );
+
 		scan( document );
 		window.addEventListener( "resize", onResize );
+		window.addEventListener( "scroll", watchHeaderOffset, { passive: true } );
 	}
 
 	window.PixelCoreGallery = {
