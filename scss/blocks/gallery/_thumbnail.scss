@@ -1,8 +1,18 @@
-// PixelCore Gallery — layout "thumbnail". CSS puro (sin JS).
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "thumbnail".
+//
+// Con JS (js/gallery/layouts/thumbnail.js): imagen principal grande + tira
+// de miniaturas clickeables debajo, para cambiar cuál se muestra en grande.
+// Sin JS: fallback a un grid simple de cuadrados (mismo criterio que los
+// demás layouts con JS).
+// -----------------------------------------------------------------------------
 
+@use "../../abstracts/variables" as v;
 @use "../../abstracts/mixins" as m;
 
-.pixelcore-gallery--thumbnail {
+// -- Fallback sin JS: grid simple de cuadrados -------------------------------
+
+.pixelcore-gallery--thumbnail:not( .pixelcore-gallery--thumbnail-js ) {
 	display: grid;
 	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
 	gap: var( --pc-gallery-gap );
@@ -16,6 +26,73 @@
 	}
 }
 
-.pixelcore-gallery--thumbnail .pixelcore-gallery__item {
+.pixelcore-gallery--thumbnail:not( .pixelcore-gallery--thumbnail-js ) .pixelcore-gallery__item {
 	aspect-ratio: 1 / 1;
+}
+
+// -- Con JS: imagen principal + tira de miniaturas ---------------------------
+
+.pixelcore-gallery--thumbnail-js {
+	display: flex;
+	flex-direction: column;
+	gap: var( --pc-gallery-gap );
+}
+
+.pixelcore-gallery__thumbnail-main {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	border-radius: v.$radius-sm;
+}
+
+.pixelcore-gallery__thumbnail-main .pixelcore-gallery__item {
+	position: absolute;
+	inset: 0;
+	display: none;
+}
+
+.pixelcore-gallery__thumbnail-main .pixelcore-gallery__item.is-active {
+	display: block;
+}
+
+.pixelcore-gallery__thumbnail-strip {
+	display: flex;
+	gap: v.$spacing-sm;
+	overflow-x: auto;
+	padding-bottom: v.$spacing-xs;
+}
+
+.pixelcore-gallery__thumb {
+	flex: 0 0 auto;
+	width: 4.5rem;
+	height: 4.5rem;
+	padding: 0;
+	border: 2px solid transparent;
+	border-radius: v.$radius-sm;
+	overflow: hidden;
+	background: none;
+	cursor: pointer;
+	opacity: 0.6;
+	transition: opacity v.$transition-fast, border-color v.$transition-fast;
+
+	img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	&:hover {
+		opacity: 0.85;
+	}
+
+	&.is-active {
+		opacity: 1;
+		border-color: v.$color-secondary;
+	}
+
+	@include m.mobile {
+		width: 3.25rem;
+		height: 3.25rem;
+	}
 }

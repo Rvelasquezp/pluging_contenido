@@ -50,7 +50,7 @@
 		{ value: "carousel", label: "Carousel / Slider", needsColumns: false, needsGap: true, needsArrowColor: true },
 		{ value: "horizontal", label: "Horizontal Gallery", needsColumns: false, needsGap: true },
 		{ value: "vertical", label: "Vertical Gallery", needsColumns: false, needsGap: true },
-		{ value: "thumbnail", label: "Thumbnail Gallery", needsColumns: true, needsGap: true },
+		{ value: "thumbnail", label: "Thumbnail Gallery", needsColumns: false, needsGap: true },
 		{ value: "fullscreen", label: "Fullscreen Gallery", needsColumns: false, needsGap: false },
 	];
 

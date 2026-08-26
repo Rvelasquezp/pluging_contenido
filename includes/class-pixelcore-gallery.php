@@ -22,6 +22,8 @@ class PixelCore_Gallery {
 	const CAROUSEL_HANDLE   = 'pixelcore-gallery-carousel';
 	const HORIZONTAL_HANDLE = 'pixelcore-gallery-horizontal';
 	const VERTICAL_HANDLE   = 'pixelcore-gallery-vertical';
+	const THUMBNAIL_HANDLE  = 'pixelcore-gallery-thumbnail';
+	const FULLSCREEN_HANDLE = 'pixelcore-gallery-fullscreen';
 	const LIGHTBOX_HANDLE   = 'pixelcore-gallery-lightbox';
 
 	/**
@@ -89,15 +91,24 @@ class PixelCore_Gallery {
 			),
 			'thumbnail'  => array(
 				'label'         => __( 'Thumbnail Gallery', 'capixel-components' ),
-				'needs_columns' => true,
+				'needs_columns' => false,
 				'needs_gap'     => true,
-				'js_handle'     => null,
+				// Imagen principal grande + tira de miniaturas clickeables debajo
+				// para cambiarla — no un grid. Sin JS (ver register_assets()),
+				// degrada a un grid simple de cuadrados por CSS.
+				'js_handle'     => self::THUMBNAIL_HANDLE,
 			),
 			'fullscreen' => array(
 				'label'         => __( 'Fullscreen Gallery', 'capixel-components' ),
 				'needs_columns' => false,
 				'needs_gap'     => false,
-				'js_handle'     => null,
+				// Una sola pantalla (100vh) con todas las imágenes apiladas en el
+				// mismo lugar. En cuanto la sección entra en pantalla
+				// (IntersectionObserver, sin scroll de por medio), arranca un
+				// slideshow automático por tiempo (crossfade CSS, sin GSAP). Sin
+				// JS, degrada a una lista simple de secciones de 100vh, una tras
+				// otra.
+				'js_handle'     => self::FULLSCREEN_HANDLE,
 			),
 		);
 	}
@@ -178,6 +189,12 @@ class PixelCore_Gallery {
 		}
 
 		wp_register_script( self::VERTICAL_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/vertical.js', $vertical_deps, $this->asset_version( 'js/gallery/layouts/vertical.js' ), true );
+
+		wp_register_script( self::THUMBNAIL_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/thumbnail.js', array( self::CORE_HANDLE ), $this->asset_version( 'js/gallery/layouts/thumbnail.js' ), true );
+
+		// El slideshow automático de "fullscreen" es CSS + IntersectionObserver
+		// puro, no necesita GSAP.
+		wp_register_script( self::FULLSCREEN_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/fullscreen.js', array( self::CORE_HANDLE ), $this->asset_version( 'js/gallery/layouts/fullscreen.js' ), true );
 	}
 
 	/**

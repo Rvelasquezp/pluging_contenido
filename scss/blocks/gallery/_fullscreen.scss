@@ -1,4 +1,16 @@
-// PixelCore Gallery — layout "fullscreen". CSS puro.
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "fullscreen".
+//
+// Por defecto: lista simple por CSS, una sección de 100vh por imagen, una
+// tras otra (funciona sin JS). Si JS está disponible,
+// js/gallery/layouts/fullscreen.js convierte esto en UNA sola pantalla
+// (100vh, tamaño fijo) con todas las imágenes apiladas en el mismo lugar, y
+// arranca un slideshow automático (crossfade por CSS, sin GSAP) en cuanto la
+// sección entra en pantalla — no depende del scroll.
+// -----------------------------------------------------------------------------
+
+@use "../../abstracts/variables" as v;
+@use "../../abstracts/mixins" as m;
 
 .pixelcore-gallery--fullscreen {
 	display: flex;
@@ -8,4 +20,31 @@
 .pixelcore-gallery--fullscreen .pixelcore-gallery__item {
 	min-height: 100vh;
 	border-radius: 0;
+}
+
+// -- Modo stack (slideshow automático) ---------------------------------------
+
+.pixelcore-gallery--fullscreen.pixelcore-gallery--fullscreen-stack {
+	position: relative;
+	display: block;
+	height: 100vh;
+	overflow: hidden;
+}
+
+.pixelcore-gallery--fullscreen-stack .pixelcore-gallery__item {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	min-height: 0;
+	opacity: 0;
+	transition: opacity 0.5s ease-in-out;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery--fullscreen-stack .pixelcore-gallery__item.is-active {
+	z-index: 2;
+	opacity: 1;
 }
