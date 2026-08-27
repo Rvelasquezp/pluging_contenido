@@ -1,0 +1,139 @@
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "waterfall" (parallax por columna, ver
+// js/gallery/layouts/waterfall.js para la animación GSAP).
+//
+// Composición editorial: N columnas independientes (mismo balanceo que
+// Masonry), cada una con imágenes de distinto aspect-ratio y un offset
+// vertical alternado — así ya se ve "en cascada" incluso en reposo, antes
+// de scrollear. TODAS las imágenes están siempre visibles en el flujo
+// normal de la página (nada recortado ni escondido, como Afterglow) — cada
+// columna se traslada como un bloque completo, pero solo una DERIVA sutil
+// relativa a las demás (no una "ventana" que revela contenido oculto), lo
+// que da la sensación de profundidad sin ocultar ninguna imagen.
+// -----------------------------------------------------------------------------
+
+@use "../../abstracts/variables" as v;
+@use "../../abstracts/mixins" as m;
+
+.pixelcore-gallery--waterfall.pixelcore-gallery--waterfall-js {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: var( --pc-gallery-gap );
+}
+
+.pixelcore-gallery__waterfall-col {
+	display: flex;
+	flex: 1 1 0;
+	flex-direction: column;
+	gap: var( --pc-gallery-gap );
+	min-width: 0;
+	will-change: transform;
+}
+
+// Offset alternado por columna — composición irregular, no una grilla
+// pareja (ver spec: "irregular waterfall/masonry composition").
+.pixelcore-gallery__waterfall-col:nth-child( 2n ) {
+	margin-top: v.$spacing-xl;
+}
+
+.pixelcore-gallery__waterfall-col:nth-child( 3n ) {
+	margin-top: v.$spacing-lg;
+}
+
+// Cada caja sale del aspect-ratio REAL de su propia imagen (igual que
+// Masonry) — así se ve la foto completa, sin recortar (object-fit:cover) y
+// sin letterboxing/relleno feo (object-fit:contain con una caja de
+// aspect-ratio fijo que no calza). Anula el default de _base.scss
+// (height:100% + object-fit:cover, pensado para cajas de tamaño fijo).
+.pixelcore-gallery--waterfall.pixelcore-gallery--waterfall-js .pixelcore-gallery__item {
+	flex: 0 0 auto;
+	width: 100%;
+}
+
+.pixelcore-gallery--waterfall .pixelcore-gallery__image {
+	height: auto;
+	object-fit: unset;
+}
+
+// Fallback mientras el JS no ha corrido todavía (o sin GSAP/ScrollTrigger:
+// waterfall.js igual arma las columnas, solo sin animación — así que este
+// selector normalmente solo se ve un instante al cargar la página).
+.pixelcore-gallery--waterfall:not( .pixelcore-gallery--waterfall-js ) {
+	display: grid;
+	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
+	gap: var( --pc-gallery-gap );
+
+	@include m.tablet {
+		grid-template-columns: repeat( var( --pc-gallery-cols-tablet ), 1fr );
+	}
+
+	@include m.mobile {
+		grid-template-columns: repeat( var( --pc-gallery-cols-mobile ), 1fr );
+	}
+}
+
+.pixelcore-gallery--waterfall:not( .pixelcore-gallery--waterfall-js ) .pixelcore-gallery__item {
+	aspect-ratio: 3 / 4;
+}
+
+// -- Overlay de título/descripción -------------------------------------------
+//
+// Mismo mecanismo que .pixelcore-hero__content/__title/__description (ver
+// scss/blocks/_hero.scss): posición libre en X/Y (vw/vh, inline desde
+// render.php), color y tamaño de fuente vía CSS vars con !important para
+// ganarle a cualquier default del editor/theme.
+
+.pixelcore-gallery__waterfall-content {
+	position: absolute;
+	z-index: 3;
+	margin: 0;
+	pointer-events: none;
+}
+
+.pixelcore-gallery__waterfall-content--align-left {
+	text-align: left;
+}
+
+.pixelcore-gallery__waterfall-content--align-center {
+	text-align: center;
+}
+
+.pixelcore-gallery__waterfall-content--align-right {
+	text-align: right;
+}
+
+// Posición "automática" (sin coordenadas medidas): centrado vertical fijo
+// dentro de la galería, y a la izquierda/centro/derecha según el preset —
+// alternativa simple a tener que calcular X/Y en vw/vh a mano.
+.pixelcore-gallery__waterfall-content--auto-left {
+	left: v.$spacing-lg;
+	top: 50%;
+	transform: translateY( -50% );
+}
+
+.pixelcore-gallery__waterfall-content--auto-center {
+	left: 50%;
+	top: 50%;
+	transform: translate( -50%, -50% );
+}
+
+.pixelcore-gallery__waterfall-content--auto-right {
+	right: v.$spacing-lg;
+	left: auto;
+	top: 50%;
+	transform: translateY( -50% );
+}
+
+.pixelcore-gallery__waterfall-title {
+	color: var( --pc-title-color, #fff ) !important;
+	font-size: var( --pc-title-font-size, #{v.$font-size-h1} ) !important;
+}
+
+.pixelcore-gallery__waterfall-description {
+	color: var( --pc-description-color, #fff ) !important;
+	font-size: var( --pc-description-font-size, #{v.$font-size-lg} ) !important;
+	line-height: v.$line-height-base;
+	opacity: 0.92;
+	margin: 0;
+}

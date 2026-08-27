@@ -40,6 +40,24 @@
 		{ name: "Large", size: "1.125rem", slug: "large" },
 	];
 
+	// Mismos presets que el bloque Hero (blocks/hero/index.js) — el overlay
+	// de Waterfall usa el mismo mecanismo (--pc-title-color/--pc-title-font-size,
+	// cp-h1), así que tiene sentido ofrecer las mismas opciones de tamaño.
+	var TITLE_FONT_SIZES = [
+		{ name: "Small", size: "2.25rem", slug: "small" },
+		{ name: "Medium", size: "3.5rem", slug: "medium" },
+		{ name: "Large", size: "4.5rem", slug: "large" },
+		{ name: "X-Large", size: "5.5rem", slug: "x-large" },
+		{ name: "Huge", size: "6.5rem", slug: "huge" },
+	];
+
+	var DESCRIPTION_FONT_SIZES = [
+		{ name: "Small", size: "0.875rem", slug: "small" },
+		{ name: "Medium", size: "1.125rem", slug: "medium" },
+		{ name: "Large", size: "1.5rem", slug: "large" },
+		{ name: "X-Large", size: "2rem", slug: "x-large" },
+	];
+
 	// Fallback si por algún motivo window.PixelCoreGalleryData no llegó a
 	// inyectarse (ver PixelCore_Gallery::enqueue_editor_data()) — así el
 	// bloque no se queda sin SelectControl utilizable.
@@ -52,6 +70,8 @@
 		{ value: "vertical", label: "Vertical Gallery", needsColumns: false, needsGap: true },
 		{ value: "thumbnail", label: "Thumbnail Gallery", needsColumns: false, needsGap: true },
 		{ value: "fullscreen", label: "Fullscreen Gallery", needsColumns: false, needsGap: false },
+		{ value: "waterfall", label: "Parallax Waterfall", needsColumns: true, needsGap: true, needsOverlayText: true },
+		{ value: "afterglow", label: "Afterglow (drift & dissolve)", needsColumns: true, needsGap: true },
 	];
 
 	function getLayouts() {
@@ -372,6 +392,142 @@
 
 			var imagePanel = el( PanelBody, { title: __( "Image Settings", "capixel-components" ), key: "image-settings", initialOpen: false }, imagePanelChildren );
 
+			// -- Overlay Text (solo Waterfall, por ahora) — mismo mecanismo
+			// que el bloque Hero: título (cp-h1) + descripción, con color y
+			// tamaño de fuente propios, en un solo bloque de contenido
+			// posicionado libremente en X/Y (vw/vh) sobre las imágenes. -----
+			var overlayPanel =
+				currentLayout.needsOverlayText &&
+				el(
+					PanelBody,
+					{ title: __( "Overlay Text", "capixel-components" ), key: "overlay-text", initialOpen: false },
+					[
+						el( TextControl, {
+							key: "waterfallTitle",
+							label: __( "Title", "capixel-components" ),
+							value: attrs.waterfallTitle,
+							onChange: function ( value ) {
+								set( { waterfallTitle: value } );
+							},
+						} ),
+						el( "p", { key: "titleColorLabel" }, __( "Title color", "capixel-components" ) ),
+						el( ColorPalette, {
+							key: "titleColor",
+							colors: PALETTE,
+							value: attrs.waterfallTitleColor,
+							onChange: function ( value ) {
+								set( { waterfallTitleColor: value || "" } );
+							},
+						} ),
+						el( FontSizePicker, {
+							key: "titleFontSize",
+							fontSizes: TITLE_FONT_SIZES,
+							value: attrs.waterfallTitleFontSize || undefined,
+							withReset: true,
+							onChange: function ( value ) {
+								set( { waterfallTitleFontSize: value || "" } );
+							},
+						} ),
+						el( TextareaControl, {
+							key: "waterfallDescription",
+							label: __( "Description", "capixel-components" ),
+							value: attrs.waterfallDescription,
+							onChange: function ( value ) {
+								set( { waterfallDescription: value } );
+							},
+						} ),
+						el( "p", { key: "descColorLabel" }, __( "Description color", "capixel-components" ) ),
+						el( ColorPalette, {
+							key: "descriptionColor",
+							colors: PALETTE,
+							value: attrs.waterfallDescriptionColor,
+							onChange: function ( value ) {
+								set( { waterfallDescriptionColor: value || "" } );
+							},
+						} ),
+						el( FontSizePicker, {
+							key: "descriptionFontSize",
+							fontSizes: DESCRIPTION_FONT_SIZES,
+							value: attrs.waterfallDescriptionFontSize || undefined,
+							withReset: true,
+							onChange: function ( value ) {
+								set( { waterfallDescriptionFontSize: value || "" } );
+							},
+						} ),
+						el( "hr", { key: "sep" } ),
+						el( ToggleControl, {
+							key: "waterfallUseCustomPosition",
+							label: __( "Use custom position (vw/vh)", "capixel-components" ),
+							help: __( "Desactivado: posición automática (izquierda/centro/derecha). Activado: coordenadas exactas en vw/vh.", "capixel-components" ),
+							checked: attrs.waterfallUseCustomPosition,
+							onChange: function ( value ) {
+								set( { waterfallUseCustomPosition: value } );
+							},
+						} ),
+						attrs.waterfallUseCustomPosition
+							? el( RangeControl, {
+									key: "waterfallContentX",
+									label: __( "Position X (vw)", "capixel-components" ),
+									value: attrs.waterfallContentX,
+									min: 0,
+									max: 100,
+									step: 0.5,
+									onChange: function ( value ) {
+										set( { waterfallContentX: value } );
+									},
+							  } )
+							: el( SelectControl, {
+									key: "waterfallContentAlign",
+									label: __( "Position", "capixel-components" ),
+									value: attrs.waterfallContentAlign,
+									options: [
+										{ value: "center", label: __( "Center", "capixel-components" ) },
+										{ value: "left", label: __( "Left", "capixel-components" ) },
+										{ value: "right", label: __( "Right", "capixel-components" ) },
+									],
+									onChange: function ( value ) {
+										set( { waterfallContentAlign: value } );
+									},
+							  } ),
+						attrs.waterfallUseCustomPosition &&
+							el( RangeControl, {
+								key: "waterfallContentY",
+								label: __( "Position Y (vh)", "capixel-components" ),
+								value: attrs.waterfallContentY,
+								min: 0,
+								max: 100,
+								step: 0.5,
+								onChange: function ( value ) {
+									set( { waterfallContentY: value } );
+								},
+							} ),
+						el( RangeControl, {
+							key: "waterfallContentMaxWidth",
+							label: __( "Content max width (px)", "capixel-components" ),
+							value: attrs.waterfallContentMaxWidth,
+							min: 200,
+							max: 1200,
+							step: 20,
+							onChange: function ( value ) {
+								set( { waterfallContentMaxWidth: value } );
+							},
+						} ),
+						el( SelectControl, {
+							key: "waterfallContentTextAlign",
+							label: __( "Text align", "capixel-components" ),
+							value: attrs.waterfallContentTextAlign,
+							options: [
+								{ value: "left", label: __( "Left", "capixel-components" ) },
+								{ value: "center", label: __( "Center", "capixel-components" ) },
+								{ value: "right", label: __( "Right", "capixel-components" ) },
+							],
+							onChange: function ( value ) {
+								set( { waterfallContentTextAlign: value } );
+							},
+						} ),
+					]
+				);
+
 			var animationPanel =
 				window.PixelCoreEditor &&
 				el( window.PixelCoreEditor.AnimationPanel, {
@@ -514,7 +670,7 @@
 			}
 
 			return el( Fragment, {}, [
-				el( InspectorControls, { key: "inspector" }, [ galleryPanel, imagePanel, animationPanel ] ),
+				el( InspectorControls, { key: "inspector" }, [ galleryPanel, imagePanel, overlayPanel, animationPanel ] ),
 				el( "div", blockProps, [ canvasContent ] ),
 			] );
 		},

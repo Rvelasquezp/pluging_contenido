@@ -1,0 +1,48 @@
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "afterglow" (deriva y disolución por imagen,
+// ver js/gallery/layouts/afterglow.js para la animación GSAP).
+//
+// Mosaico: un solo CSS Grid con celdas de distinto tamaño según su posición
+// (grid-auto-flow:dense reordena solo) — no columnas balanceadas por JS
+// como Masonry/Waterfall.
+// -----------------------------------------------------------------------------
+
+@use "../../abstracts/variables" as v;
+@use "../../abstracts/mixins" as m;
+
+.pixelcore-gallery--afterglow {
+	display: grid;
+	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
+	grid-auto-rows: 10vw;
+	grid-auto-flow: dense;
+	gap: var( --pc-gallery-gap );
+
+	@include m.tablet {
+		grid-template-columns: repeat( var( --pc-gallery-cols-tablet ), 1fr );
+	}
+
+	@include m.mobile {
+		grid-template-columns: repeat( var( --pc-gallery-cols-mobile ), 1fr );
+		grid-auto-rows: 40vw;
+	}
+}
+
+// Variedad de tamaño de celda por posición — mosaico irregular en vez de
+// una grilla pareja.
+.pixelcore-gallery--afterglow .pixelcore-gallery__item {
+	grid-row: span 2;
+	grid-column: span 1;
+}
+
+.pixelcore-gallery--afterglow .pixelcore-gallery__item:nth-child( 5n + 2 ) {
+	grid-row: span 3;
+	grid-column: span 2;
+}
+
+.pixelcore-gallery--afterglow .pixelcore-gallery__item:nth-child( 5n + 4 ) {
+	grid-row: span 1;
+}
+
+.pixelcore-gallery--afterglow .pixelcore-gallery__item:nth-child( 7n + 6 ) {
+	grid-column: span 2;
+}

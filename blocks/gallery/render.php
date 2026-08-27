@@ -29,6 +29,18 @@ $caption_align   = $attributes['captionTextAlign'] ?? 'left';
 $caption_position = $attributes['captionPosition'] ?? 'bottom';
 $arrow_color       = $attributes['carouselArrowColor'] ?? '#495156';
 $arrow_hover_color = $attributes['carouselArrowHoverColor'] ?? '#f97316';
+$waterfall_title                 = $attributes['waterfallTitle'] ?? '';
+$waterfall_title_color           = $attributes['waterfallTitleColor'] ?? '';
+$waterfall_title_font_size       = $attributes['waterfallTitleFontSize'] ?? '';
+$waterfall_description           = $attributes['waterfallDescription'] ?? '';
+$waterfall_description_color     = $attributes['waterfallDescriptionColor'] ?? '';
+$waterfall_description_font_size = $attributes['waterfallDescriptionFontSize'] ?? '';
+$waterfall_use_custom_position    = ! empty( $attributes['waterfallUseCustomPosition'] );
+$waterfall_content_x             = (float) ( $attributes['waterfallContentX'] ?? 8 );
+$waterfall_content_y             = (float) ( $attributes['waterfallContentY'] ?? 8 );
+$waterfall_content_align         = $attributes['waterfallContentAlign'] ?? 'center';
+$waterfall_content_max_width     = (int) ( $attributes['waterfallContentMaxWidth'] ?? 800 );
+$waterfall_content_text_align    = $attributes['waterfallContentTextAlign'] ?? 'left';
 
 if ( empty( $images ) ) {
 	return;
@@ -95,8 +107,60 @@ $gallery_data_attrs = sprintf(
 	$lightbox ? 'true' : 'false',
 	esc_attr( wp_json_encode( $lightbox_images ) )
 );
+
+// Posición del overlay de título/descripción de Waterfall: "medida" (X/Y
+// exactos en vw/vh, inline) o "automática" (preset izquierda/centro/derecha
+// vía clase, ver _waterfall.scss) — mismo mecanismo que "Use custom
+// position" del bloque Hero.
+$waterfall_content_classes = array(
+	'pixelcore-gallery__waterfall-content',
+	'cp-container',
+	'pixelcore-gallery__waterfall-content--align-' . sanitize_html_class( $waterfall_content_text_align ),
+);
+
+$waterfall_content_style = 'max-width:' . (int) $waterfall_content_max_width . 'px';
+
+if ( $waterfall_use_custom_position ) {
+	$waterfall_content_classes[] = 'pixelcore-gallery__waterfall-content--custom-position';
+	$waterfall_content_style    .= ';left:' . esc_attr( $waterfall_content_x ) . 'vw;top:' . esc_attr( $waterfall_content_y ) . 'vh';
+} else {
+	$waterfall_content_classes[] = 'pixelcore-gallery__waterfall-content--auto-' . sanitize_html_class( $waterfall_content_align );
+}
 ?>
 <div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput -- ya escapado por get_block_wrapper_attributes(). ?> <?php echo $gallery_data_attrs; // phpcs:ignore WordPress.Security.EscapeOutput -- construido con esc_attr() arriba. ?> <?php echo $animation_attrs; // phpcs:ignore WordPress.Security.EscapeOutput -- ya escapado por capixel_animation_attributes(). ?>>
+	<?php if ( 'waterfall' === $gallery_type && ( $waterfall_title || $waterfall_description ) ) : ?>
+		<div
+			class="<?php echo esc_attr( implode( ' ', $waterfall_content_classes ) ); ?>"
+			style="<?php echo esc_attr( $waterfall_content_style ); ?>"
+		>
+			<?php if ( $waterfall_title ) : ?>
+				<h2
+					class="pixelcore-gallery__waterfall-title cp-h1"
+					<?php
+					echo capixel_css_vars_attribute(
+						array(
+							'--pc-title-color'     => $waterfall_title_color,
+							'--pc-title-font-size' => $waterfall_title_font_size,
+						)
+					);
+					?>
+				><?php echo wp_kses_post( $waterfall_title ); ?></h2>
+			<?php endif; ?>
+			<?php if ( $waterfall_description ) : ?>
+				<p
+					class="pixelcore-gallery__waterfall-description"
+					<?php
+					echo capixel_css_vars_attribute(
+						array(
+							'--pc-description-color'     => $waterfall_description_color,
+							'--pc-description-font-size' => $waterfall_description_font_size,
+						)
+					);
+					?>
+				><?php echo wp_kses_post( $waterfall_description ); ?></p>
+			<?php endif; ?>
+		</div>
+	<?php endif; ?>
 	<?php foreach ( $images as $index => $image ) : ?>
 		<?php
 		$id          = isset( $image['id'] ) ? (int) $image['id'] : 0;
