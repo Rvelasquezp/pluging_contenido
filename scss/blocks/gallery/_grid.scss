@@ -19,3 +19,22 @@
 .pixelcore-gallery--grid .pixelcore-gallery__item {
 	aspect-ratio: 4 / 3;
 }
+
+// -- Hover zoom (toggle "Image hover zoom" en Gallery Settings) -------------
+//
+// .pixelcore-gallery__item ya tiene overflow:hidden por defecto (ver
+// _base.scss), así que solo hace falta animar el transform de la imagen —
+// el propio item recorta el zoom sin necesitar nada extra en el botón.
+
+.pixelcore-gallery--grid.pixelcore-gallery--hover-zoom .pixelcore-gallery__image {
+	transition: transform 0.3s ease-out;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery--grid.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:hover .pixelcore-gallery__image,
+.pixelcore-gallery--grid.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:focus-within .pixelcore-gallery__image {
+	transform: scale( 1.1 );
+}

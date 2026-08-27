@@ -20,6 +20,7 @@ $columns       = wp_parse_args(
 );
 $gap             = (int) ( $attributes['gap'] ?? 16 );
 $lightbox        = ! empty( $attributes['lightbox'] );
+$hover_zoom      = ! isset( $attributes['imageHoverZoom'] ) || ! empty( $attributes['imageHoverZoom'] );
 $caption_color   = $attributes['captionTextColor'] ?? '';
 $caption_size    = $attributes['captionFontSize'] ?? '';
 $caption_bg      = $attributes['captionBgColor'] ?? '';
@@ -49,6 +50,10 @@ $wrapper_classes = array(
 	'pixelcore-gallery',
 	'pixelcore-gallery--' . sanitize_html_class( $gallery_type ),
 );
+
+if ( $hover_zoom ) {
+	$wrapper_classes[] = 'pixelcore-gallery--hover-zoom';
+}
 
 $wrapper_style = array(
 	'--pc-gallery-cols-desktop:' . (int) $columns['desktop'],

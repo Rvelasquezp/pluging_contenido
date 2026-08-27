@@ -14,13 +14,39 @@
 		return;
 	}
 
-	var TARGET_ROW_HEIGHT = 220;
 	var DEFAULT_ASPECT = 1.5;
+	var MIN_ROW_HEIGHT = 80;
+
+	function currentBreakpointName() {
+		if ( window.PixelCoreAnimations && window.PixelCoreAnimations.currentBreakpoint ) {
+			return window.PixelCoreAnimations.currentBreakpoint();
+		}
+
+		var width = window.innerWidth;
+
+		if ( width <= 768 ) {
+			return "mobile";
+		}
+
+		if ( width <= 1024 ) {
+			return "tablet";
+		}
+
+		return "desktop";
+	}
 
 	function readInt( styles, name, fallback ) {
 		var value = parseInt( styles.getPropertyValue( name ), 10 );
 
 		return isNaN( value ) || value <= 0 ? fallback : value;
+	}
+
+	// El bloque expone "Columns" (mismo control que Grid/Masonry) también
+	// para Justified, aunque acá no arma columnas fijas — lo traducimos a
+	// una altura de fila objetivo: a más columnas pedidas, filas más bajas
+	// (más imágenes entran por fila), y viceversa.
+	function targetRowHeight( cols, containerWidth ) {
+		return Math.max( MIN_ROW_HEIGHT, containerWidth / ( cols * DEFAULT_ASPECT ) );
 	}
 
 	function aspectOf( item ) {
@@ -45,18 +71,20 @@
 		var styles = getComputedStyle( el );
 		var gap = readInt( styles, "--pc-gallery-gap", 16 );
 		var containerWidth = el.clientWidth;
+		var cols = readInt( styles, "--pc-gallery-cols-" + currentBreakpointName(), 3 );
+		var rowHeightGoal = targetRowHeight( cols, containerWidth );
 
 		var row = [];
 		var rowAspectSum = 0;
 
 		// Alto de la última fila COMPLETA (justificada al ancho real del
 		// contenedor). Una fila final incompleta (menos imágenes de las que
-		// entrarían) lo usa como referencia en vez de TARGET_ROW_HEIGHT fijo
-		// — si no, casi siempre queda visiblemente más alta que las filas
+		// entrarían) lo usa como referencia en vez de rowHeightGoal fijo — si
+		// no, casi siempre queda visiblemente más alta que las filas
 		// anteriores (que se comprimen para llenar el ancho), porque una
 		// fila con pocas imágenes necesitaría ESTIRARSE de más para llegar a
 		// ocupar todo el ancho, y eso se ve peor que dejarla un poco corta.
-		var lastCompletedRowHeight = TARGET_ROW_HEIGHT;
+		var lastCompletedRowHeight = rowHeightGoal;
 
 		function flushRow( isLast ) {
 			if ( ! row.length ) {
@@ -88,7 +116,7 @@
 			row.push( { item: item, aspect: aspect } );
 			rowAspectSum += aspect;
 
-			var estimatedWidth = rowAspectSum * TARGET_ROW_HEIGHT + gap * ( row.length - 1 );
+			var estimatedWidth = rowAspectSum * rowHeightGoal + gap * ( row.length - 1 );
 
 			if ( estimatedWidth >= containerWidth ) {
 				flushRow( false );

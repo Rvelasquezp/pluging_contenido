@@ -3,6 +3,8 @@
 // ratio real de cada imagen — por eso el height:100% del default de
 // _base.scss es correcto aquí, no hace falta anularlo).
 
+@use "../../abstracts/mixins" as m;
+
 .pixelcore-gallery--justified {
 	display: flex;
 	flex-wrap: wrap;
@@ -17,4 +19,22 @@
 .pixelcore-gallery--justified:not( .pixelcore-gallery--justified-js ) .pixelcore-gallery__item {
 	flex-basis: calc( 33.333% - var( --pc-gallery-gap ) );
 	aspect-ratio: 4 / 3;
+}
+
+// -- Hover zoom (toggle "Image hover zoom" en Gallery Settings) -------------
+//
+// .pixelcore-gallery__item ya tiene overflow:hidden por defecto (_base.scss),
+// así que el zoom se recorta solo sin necesitar nada extra en el botón.
+
+.pixelcore-gallery--justified.pixelcore-gallery--hover-zoom .pixelcore-gallery__image {
+	transition: transform 0.3s ease-out;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery--justified.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:hover .pixelcore-gallery__image,
+.pixelcore-gallery--justified.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:focus-within .pixelcore-gallery__image {
+	transform: scale( 1.1 );
 }

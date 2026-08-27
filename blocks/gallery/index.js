@@ -44,11 +44,11 @@
 	// inyectarse (ver PixelCore_Gallery::enqueue_editor_data()) — así el
 	// bloque no se queda sin SelectControl utilizable.
 	var FALLBACK_LAYOUTS = [
-		{ value: "grid", label: "Grid", needsColumns: true, needsGap: true },
-		{ value: "masonry", label: "Masonry", needsColumns: true, needsGap: true },
-		{ value: "justified", label: "Justified Gallery", needsColumns: false, needsGap: true },
-		{ value: "carousel", label: "Carousel / Slider", needsColumns: false, needsGap: true, needsArrowColor: true },
-		{ value: "horizontal", label: "Horizontal Gallery", needsColumns: false, needsGap: true },
+		{ value: "grid", label: "Grid", needsColumns: true, needsGap: true, needsHoverZoom: true },
+		{ value: "masonry", label: "Masonry", needsColumns: true, needsGap: true, needsHoverZoom: true },
+		{ value: "justified", label: "Justified Gallery", needsColumns: true, needsGap: true, needsHoverZoom: true },
+		{ value: "carousel", label: "Carousel / Slider", needsColumns: true, needsGap: true, needsArrowColor: true, needsHoverZoom: true },
+		{ value: "horizontal", label: "Horizontal Gallery", needsColumns: true, needsGap: true, needsHoverZoom: true },
 		{ value: "vertical", label: "Vertical Gallery", needsColumns: false, needsGap: true },
 		{ value: "thumbnail", label: "Thumbnail Gallery", needsColumns: false, needsGap: true },
 		{ value: "fullscreen", label: "Fullscreen Gallery", needsColumns: false, needsGap: false },
@@ -222,6 +222,20 @@
 					},
 				} )
 			);
+
+			if ( currentLayout.needsHoverZoom ) {
+				galleryPanelChildren.push(
+					el( ToggleControl, {
+						key: "imageHoverZoom",
+						label: __( "Image hover zoom", "capixel-components" ),
+						help: __( "Al pasar el mouse sobre una imagen, hace un zoom suave.", "capixel-components" ),
+						checked: attrs.imageHoverZoom,
+						onChange: function ( value ) {
+							set( { imageHoverZoom: value } );
+						},
+					} )
+				);
+			}
 
 			if ( currentLayout.needsArrowColor ) {
 				galleryPanelChildren.push(

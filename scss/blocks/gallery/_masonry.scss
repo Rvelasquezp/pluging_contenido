@@ -51,3 +51,21 @@
 	height: auto;
 	object-fit: unset;
 }
+
+// -- Hover zoom (toggle "Image hover zoom" en Gallery Settings) -------------
+//
+// .pixelcore-gallery__item ya tiene overflow:hidden por defecto (_base.scss),
+// así que el zoom se recorta solo sin necesitar nada extra en el botón.
+
+.pixelcore-gallery--masonry.pixelcore-gallery--hover-zoom .pixelcore-gallery__image {
+	transition: transform 0.3s ease-out;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery--masonry.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:hover .pixelcore-gallery__image,
+.pixelcore-gallery--masonry.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:focus-within .pixelcore-gallery__image {
+	transform: scale( 1.1 );
+}

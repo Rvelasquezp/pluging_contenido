@@ -6,6 +6,7 @@
 // -----------------------------------------------------------------------------
 
 @use "../../abstracts/variables" as v;
+@use "../../abstracts/mixins" as m;
 
 .pixelcore-gallery--carousel {
 	position: relative;
@@ -41,11 +42,24 @@
 	padding-bottom: v.$spacing-sm;
 }
 
+// Ancho del slide calculado a partir de --pc-gallery-cols-* (mismo control
+// "Columns" que Grid/Masonry/Justified) — cuántos slides completos entran a
+// la vez en el viewport del carrusel, por breakpoint. Pura CSS: el % de
+// "width" en un flex item de fila resuelve contra el ancho del track, así
+// que no hace falta JS para recalcularlo.
 .pixelcore-gallery--carousel .pixelcore-gallery__item {
 	flex: 0 0 auto;
-	width: min( 80vw, 480px );
+	width: calc( ( 100% - var( --pc-gallery-gap ) * ( var( --pc-gallery-cols-desktop ) - 1 ) ) / var( --pc-gallery-cols-desktop ) );
 	aspect-ratio: 4 / 3;
 	scroll-snap-align: start;
+
+	@include m.tablet {
+		width: calc( ( 100% - var( --pc-gallery-gap ) * ( var( --pc-gallery-cols-tablet ) - 1 ) ) / var( --pc-gallery-cols-tablet ) );
+	}
+
+	@include m.mobile {
+		width: calc( ( 100% - var( --pc-gallery-gap ) * ( var( --pc-gallery-cols-mobile ) - 1 ) ) / var( --pc-gallery-cols-mobile ) );
+	}
 }
 
 .pixelcore-gallery--carousel .pixelcore-gallery__nav {
@@ -83,4 +97,22 @@
 
 .pixelcore-gallery--carousel .pixelcore-gallery__nav--next {
 	right: v.$spacing-lg;
+}
+
+// -- Hover zoom (toggle "Image hover zoom" en Gallery Settings) -------------
+//
+// .pixelcore-gallery__item ya tiene overflow:hidden por defecto (_base.scss),
+// así que el zoom se recorta solo sin necesitar nada extra en el botón.
+
+.pixelcore-gallery--carousel.pixelcore-gallery--hover-zoom .pixelcore-gallery__image {
+	transition: transform 0.3s ease-out;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery--carousel.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:hover .pixelcore-gallery__image,
+.pixelcore-gallery--carousel.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:focus-within .pixelcore-gallery__image {
+	transform: scale( 1.1 );
 }

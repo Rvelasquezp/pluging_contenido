@@ -9,6 +9,7 @@
 // -----------------------------------------------------------------------------
 
 @use "../../abstracts/variables" as v;
+@use "../../abstracts/mixins" as m;
 
 .pixelcore-gallery--horizontal {
 	display: flex;
@@ -18,11 +19,25 @@
 	scroll-snap-type: x proximity;
 }
 
+// Ancho del slide calculado a partir de --pc-gallery-cols-* (mismo control
+// "Columns" que Grid/Masonry/Justified/Carousel) — cuántos slides completos
+// entran a la vez, por breakpoint. Aplica igual en el fallback sin JS (los
+// items son hijos directos de .pixelcore-gallery--horizontal) y en el modo
+// pin (son hijos de .pixelcore-gallery__track, que hereda las CSS vars del
+// wrapper) — pura CSS, no hace falta que el JS recalcule nada.
 .pixelcore-gallery--horizontal .pixelcore-gallery__item {
 	flex: 0 0 auto;
-	width: min( 70vw, 420px );
+	width: calc( ( 100% - var( --pc-gallery-gap ) * ( var( --pc-gallery-cols-desktop ) - 1 ) ) / var( --pc-gallery-cols-desktop ) );
 	aspect-ratio: 4 / 3;
 	scroll-snap-align: start;
+
+	@include m.tablet {
+		width: calc( ( 100% - var( --pc-gallery-gap ) * ( var( --pc-gallery-cols-tablet ) - 1 ) ) / var( --pc-gallery-cols-tablet ) );
+	}
+
+	@include m.mobile {
+		width: calc( ( 100% - var( --pc-gallery-gap ) * ( var( --pc-gallery-cols-mobile ) - 1 ) ) / var( --pc-gallery-cols-mobile ) );
+	}
 }
 
 // -- Modo pin (GSAP ScrollTrigger) -------------------------------------------
@@ -40,4 +55,25 @@
 
 .pixelcore-gallery--horizontal-pin .pixelcore-gallery__item {
 	scroll-snap-align: none;
+}
+
+// -- Hover zoom (toggle "Image hover zoom" en Gallery Settings) -------------
+//
+// .pixelcore-gallery__item ya tiene overflow:hidden por defecto (_base.scss),
+// así que el zoom se recorta solo sin necesitar nada extra en el botón. Se
+// aplica igual en el fallback sin JS y en el modo pin (los items siguen
+// siendo .pixelcore-gallery__item, solo cambia si viven directo bajo el
+// wrapper o bajo el track).
+
+.pixelcore-gallery--horizontal.pixelcore-gallery--hover-zoom .pixelcore-gallery__image {
+	transition: transform 0.3s ease-out;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery--horizontal.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:hover .pixelcore-gallery__image,
+.pixelcore-gallery--horizontal.pixelcore-gallery--hover-zoom .pixelcore-gallery__item:focus-within .pixelcore-gallery__image {
+	transform: scale( 1.1 );
 }

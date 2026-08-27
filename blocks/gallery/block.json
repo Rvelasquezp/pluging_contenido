@@ -22,6 +22,7 @@
 		},
 		"gap": { "type": "number", "default": 16 },
 		"lightbox": { "type": "boolean", "default": true },
+		"imageHoverZoom": { "type": "boolean", "default": true },
 		"carouselArrowColor": { "type": "string", "default": "#495156" },
 		"carouselArrowHoverColor": { "type": "string", "default": "#f97316" },
 		"captionTextColor": { "type": "string", "default": "" },

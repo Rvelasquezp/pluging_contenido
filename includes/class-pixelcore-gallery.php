@@ -43,40 +43,66 @@ class PixelCore_Gallery {
 	public static function builtins() {
 		return array(
 			'grid'       => array(
-				'label'         => __( 'Grid', 'capixel-components' ),
-				'needs_columns' => true,
-				'needs_gap'     => true,
-				'js_handle'     => null,
+				'label'             => __( 'Grid', 'capixel-components' ),
+				'needs_columns'     => true,
+				'needs_gap'         => true,
+				// Zoom suave de la imagen al pasar el mouse — toggle opcional,
+				// igual que el lightbox. Ver scss/blocks/gallery/_grid.scss.
+				'needs_hover_zoom'  => true,
+				'js_handle'         => null,
 			),
 			'masonry'    => array(
-				'label'         => __( 'Masonry', 'capixel-components' ),
-				'needs_columns' => true,
-				'needs_gap'     => true,
-				'js_handle'     => self::MASONRY_HANDLE,
+				'label'            => __( 'Masonry', 'capixel-components' ),
+				'needs_columns'    => true,
+				'needs_gap'        => true,
+				'needs_hover_zoom' => true,
+				'js_handle'        => self::MASONRY_HANDLE,
 			),
 			'justified'  => array(
 				'label'         => __( 'Justified Gallery', 'capixel-components' ),
-				'needs_columns' => false,
-				'needs_gap'     => true,
-				'js_handle'     => self::JUSTIFIED_HANDLE,
+				// A diferencia de Grid/Masonry, "justified" no arma columnas
+				// fijas — empaqueta filas por altura objetivo, escalando cada
+				// imagen según su aspect ratio real. Igual exponemos el mismo
+				// control de "Columns" que el resto de layouts (mismo
+				// attrs.columns, mismos sliders) porque es el lenguaje que ya
+				// conoce quien edita el bloque; js/gallery/layouts/justified.js
+				// lo traduce a la altura de fila objetivo que el algoritmo
+				// necesita (más columnas = filas más bajas = más imágenes por
+				// fila, y viceversa).
+				'needs_columns'    => true,
+				'needs_gap'        => true,
+				'needs_hover_zoom' => true,
+				'js_handle'        => self::JUSTIFIED_HANDLE,
 			),
 			'carousel'   => array(
 				'label'             => __( 'Carousel / Slider', 'capixel-components' ),
-				'needs_columns'     => false,
+				// Cuántos slides se ven a la vez en el viewport del carrusel,
+				// por breakpoint (mismo control que Grid/Masonry/Justified) —
+				// ver scss/blocks/gallery/_carousel.scss, ancho de
+				// .pixelcore-gallery__item calculado a partir de estas
+				// columnas, sin necesitar JS.
+				'needs_columns'     => true,
 				'needs_gap'         => true,
 				'needs_arrow_color' => true,
+				'needs_hover_zoom'  => true,
 				'js_handle'         => self::CAROUSEL_HANDLE,
 			),
 			'horizontal' => array(
 				'label'         => __( 'Horizontal Gallery', 'capixel-components' ),
-				'needs_columns' => false,
-				'needs_gap'     => true,
+				// Cuántos slides se ven a la vez, por breakpoint (mismo control
+				// que Grid/Masonry/Justified/Carousel) — ver
+				// scss/blocks/gallery/_horizontal.scss, ancho de
+				// .pixelcore-gallery__item calculado a partir de estas columnas,
+				// tanto en el fallback sin JS como en el modo pin de GSAP.
+				'needs_columns'    => true,
+				'needs_gap'        => true,
+				'needs_hover_zoom' => true,
 				// Con GSAP+ScrollTrigger disponibles, se "pinea" la sección y el
 				// scroll vertical mueve las imágenes en horizontal hasta la
 				// última, y ahí se despinea sola. Sin GSAP (ver
 				// register_assets()), degrada a scroll horizontal nativo por
 				// CSS — nunca se rompe, solo pierde el efecto.
-				'js_handle'     => self::HORIZONTAL_HANDLE,
+				'js_handle'        => self::HORIZONTAL_HANDLE,
 			),
 			'vertical'   => array(
 				'label'         => __( 'Vertical Gallery', 'capixel-components' ),
@@ -212,6 +238,7 @@ class PixelCore_Gallery {
 				'needsColumns'    => ! empty( $layout['needs_columns'] ),
 				'needsGap'        => ! empty( $layout['needs_gap'] ),
 				'needsArrowColor' => ! empty( $layout['needs_arrow_color'] ),
+				'needsHoverZoom'  => ! empty( $layout['needs_hover_zoom'] ),
 			);
 		}
 
