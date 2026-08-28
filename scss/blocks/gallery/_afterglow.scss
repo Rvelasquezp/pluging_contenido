@@ -1,20 +1,34 @@
 // -----------------------------------------------------------------------------
-// PixelCore Gallery — layout "afterglow" (deriva y disolución por imagen,
-// ver js/gallery/layouts/afterglow.js para la animación GSAP).
+// PixelCore Gallery — layout "afterglow" (mosaico disperso, deriva y
+// disolución independiente por imagen, ver
+// js/gallery/layouts/afterglow.js).
 //
-// Mosaico: un solo CSS Grid con celdas de distinto tamaño según su posición
-// (grid-auto-flow:dense reordena solo) — no columnas balanceadas por JS
-// como Masonry/Waterfall.
+// El posicionamiento (left/top/width por imagen) lo calcula JS, no CSS —
+// cada imagen necesita su ancho/alto real para decidir dónde entra sin
+// chocar con las demás (ver el comentario grande en afterglow.js). Acá
+// solo va lo que SIEMPRE es igual: el contenedor es position:relative con
+// alto explícito (JS lo calcula), y cada item es position:absolute (JS le
+// pone left/top/width puntuales).
 // -----------------------------------------------------------------------------
 
 @use "../../abstracts/variables" as v;
 @use "../../abstracts/mixins" as m;
 
-.pixelcore-gallery--afterglow {
+.pixelcore-gallery--afterglow.pixelcore-gallery--afterglow-js {
+	position: relative;
+}
+
+.pixelcore-gallery--afterglow.pixelcore-gallery--afterglow-js .pixelcore-gallery__item {
+	position: absolute;
+}
+
+// Fallback mientras el JS no ha corrido todavía (o sin GSAP/ScrollTrigger:
+// afterglow.js igual arma el mosaico disperso, solo sin animación — así
+// que este selector normalmente solo se ve un instante al cargar, o nunca
+// si JS está desactivado del todo).
+.pixelcore-gallery--afterglow:not( .pixelcore-gallery--afterglow-js ) {
 	display: grid;
 	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
-	grid-auto-rows: 10vw;
-	grid-auto-flow: dense;
 	gap: var( --pc-gallery-gap );
 
 	@include m.tablet {
@@ -23,26 +37,57 @@
 
 	@include m.mobile {
 		grid-template-columns: repeat( var( --pc-gallery-cols-mobile ), 1fr );
-		grid-auto-rows: 40vw;
 	}
 }
 
-// Variedad de tamaño de celda por posición — mosaico irregular en vez de
-// una grilla pareja.
+.pixelcore-gallery--afterglow:not( .pixelcore-gallery--afterglow-js ) .pixelcore-gallery__item {
+	aspect-ratio: 3 / 4;
+}
+
+// afterglow.js envuelve el contenido de cada item en este "inner" — es lo
+// único que GSAP transforma (scale/xPercent/yPercent). El item en sí NUNCA
+// se transforma, así queda como referencia estable para que ScrollTrigger
+// mida bien su tamaño.
+.pixelcore-gallery__afterglow-inner {
+	display: block;
+	width: 100%;
+}
+
+// Evita el "flash" al cargar: antes de que GSAP tome control, la imagen se
+// vería un instante a su tamaño final SIN transformar y después saltaría
+// de golpe a su escala inicial — feo. En vez de eso, arranca invisible y
+// aparece con un fade corto justo cuando afterglow.js agrega la clase
+// --afterglow-js (momento en el que el transform de GSAP YA está puesto),
+// así lo que se ve es un fade suave, nunca un salto de tamaño. Sin JS (la
+// clase nunca se agrega), se queda visible igual — nunca se rompe.
 .pixelcore-gallery--afterglow .pixelcore-gallery__item {
-	grid-row: span 2;
-	grid-column: span 1;
+	opacity: 0;
+	transition: opacity 0.25s ease;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
 }
 
-.pixelcore-gallery--afterglow .pixelcore-gallery__item:nth-child( 5n + 2 ) {
-	grid-row: span 3;
-	grid-column: span 2;
+.pixelcore-gallery--afterglow.pixelcore-gallery--afterglow-js .pixelcore-gallery__item {
+	opacity: 1;
 }
 
-.pixelcore-gallery--afterglow .pixelcore-gallery__item:nth-child( 5n + 4 ) {
-	grid-row: span 1;
+.pixelcore-gallery--afterglow:not( .pixelcore-gallery--afterglow-js ) .pixelcore-gallery__item {
+	opacity: 1;
 }
 
-.pixelcore-gallery--afterglow .pixelcore-gallery__item:nth-child( 7n + 6 ) {
-	grid-column: span 2;
+// La imagen conserva su proporción real (igual que Masonry/Waterfall) —
+// anula el default de _base.scss (height:100% + object-fit:cover, pensado
+// para cajas de tamaño fijo).
+.pixelcore-gallery--afterglow .pixelcore-gallery__image {
+	height: auto;
+	object-fit: unset;
+}
+
+// Sin fondo propio en el item — anula el background-color de placeholder
+// de _base.scss (pensado para cajas de tamaño fijo con letterboxing; acá
+// la caja siempre calza con la imagen, así que no hace falta nada detrás).
+.pixelcore-gallery--afterglow .pixelcore-gallery__item {
+	background-color: transparent;
 }

@@ -1,15 +1,13 @@
 // -----------------------------------------------------------------------------
-// PixelCore Gallery — layout "waterfall" (parallax por columna, ver
-// js/gallery/layouts/waterfall.js para la animación GSAP).
+// PixelCore Gallery — layout "waterfall" (mosaico disperso, deriva vertical
+// independiente por imagen, ver js/gallery/layouts/waterfall.js).
 //
-// Composición editorial: N columnas independientes (mismo balanceo que
-// Masonry), cada una con imágenes de distinto aspect-ratio y un offset
-// vertical alternado — así ya se ve "en cascada" incluso en reposo, antes
-// de scrollear. TODAS las imágenes están siempre visibles en el flujo
-// normal de la página (nada recortado ni escondido, como Afterglow) — cada
-// columna se traslada como un bloque completo, pero solo una DERIVA sutil
-// relativa a las demás (no una "ventana" que revela contenido oculto), lo
-// que da la sensación de profundidad sin ocultar ninguna imagen.
+// El posicionamiento (left/top/width por imagen) lo calcula JS, no CSS —
+// cada imagen necesita su ancho/alto real para decidir dónde entra sin
+// chocar con las demás (ver el comentario grande en waterfall.js). Acá solo
+// va lo que SIEMPRE es igual: el contenedor es position:relative con alto
+// explícito (JS lo calcula), y cada item es position:absolute (JS le pone
+// left/top/width puntuales) — sin fondo propio, sin columnas.
 // -----------------------------------------------------------------------------
 
 @use "../../abstracts/variables" as v;
@@ -17,48 +15,16 @@
 
 .pixelcore-gallery--waterfall.pixelcore-gallery--waterfall-js {
 	position: relative;
-	display: flex;
-	align-items: flex-start;
-	gap: var( --pc-gallery-gap );
 }
 
-.pixelcore-gallery__waterfall-col {
-	display: flex;
-	flex: 1 1 0;
-	flex-direction: column;
-	gap: var( --pc-gallery-gap );
-	min-width: 0;
-	will-change: transform;
-}
-
-// Offset alternado por columna — composición irregular, no una grilla
-// pareja (ver spec: "irregular waterfall/masonry composition").
-.pixelcore-gallery__waterfall-col:nth-child( 2n ) {
-	margin-top: v.$spacing-xl;
-}
-
-.pixelcore-gallery__waterfall-col:nth-child( 3n ) {
-	margin-top: v.$spacing-lg;
-}
-
-// Cada caja sale del aspect-ratio REAL de su propia imagen (igual que
-// Masonry) — así se ve la foto completa, sin recortar (object-fit:cover) y
-// sin letterboxing/relleno feo (object-fit:contain con una caja de
-// aspect-ratio fijo que no calza). Anula el default de _base.scss
-// (height:100% + object-fit:cover, pensado para cajas de tamaño fijo).
 .pixelcore-gallery--waterfall.pixelcore-gallery--waterfall-js .pixelcore-gallery__item {
-	flex: 0 0 auto;
-	width: 100%;
-}
-
-.pixelcore-gallery--waterfall .pixelcore-gallery__image {
-	height: auto;
-	object-fit: unset;
+	position: absolute;
 }
 
 // Fallback mientras el JS no ha corrido todavía (o sin GSAP/ScrollTrigger:
-// waterfall.js igual arma las columnas, solo sin animación — así que este
-// selector normalmente solo se ve un instante al cargar la página).
+// waterfall.js igual arma el mosaico disperso, solo sin animación — así
+// que este selector normalmente solo se ve un instante al cargar, o nunca
+// si JS está desactivado del todo).
 .pixelcore-gallery--waterfall:not( .pixelcore-gallery--waterfall-js ) {
 	display: grid;
 	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
@@ -75,6 +41,54 @@
 
 .pixelcore-gallery--waterfall:not( .pixelcore-gallery--waterfall-js ) .pixelcore-gallery__item {
 	aspect-ratio: 3 / 4;
+}
+
+// La imagen conserva su proporción real (igual que Masonry/Afterglow) —
+// anula el default de _base.scss (height:100% + object-fit:cover, pensado
+// para cajas de tamaño fijo).
+.pixelcore-gallery--waterfall .pixelcore-gallery__image {
+	height: auto;
+	object-fit: unset;
+}
+
+// Sin fondo propio en el item — anula el background-color de placeholder
+// de _base.scss (pensado para cajas de tamaño fijo con letterboxing; acá
+// la caja siempre calza con la imagen, así que no hace falta nada detrás).
+.pixelcore-gallery--waterfall .pixelcore-gallery__item {
+	background-color: transparent;
+}
+
+// waterfall.js envuelve el contenido de cada item en este "inner" — es lo
+// único que se anima (deriva vertical/horizontal propia). El item en sí
+// NUNCA se transforma, queda como referencia estable para que ScrollTrigger
+// mida bien su tamaño.
+.pixelcore-gallery__waterfall-inner {
+	display: block;
+	width: 100%;
+}
+
+// Evita el "flash" al cargar: antes de que GSAP tome control, la imagen se
+// vería un instante en su posición final SIN transformar y después
+// saltaría de golpe a su offset inicial — feo. En vez de eso, arranca
+// invisible y aparece con un fade corto justo cuando waterfall.js agrega
+// la clase --waterfall-js (momento en el que el transform de GSAP YA está
+// puesto), así lo que se ve es un fade suave, nunca un salto. Sin JS (la
+// clase nunca se agrega), se queda visible igual — nunca se rompe.
+.pixelcore-gallery--waterfall .pixelcore-gallery__item {
+	opacity: 0;
+	transition: opacity 0.25s ease;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery--waterfall.pixelcore-gallery--waterfall-js .pixelcore-gallery__item {
+	opacity: 1;
+}
+
+.pixelcore-gallery--waterfall:not( .pixelcore-gallery--waterfall-js ) .pixelcore-gallery__item {
+	opacity: 1;
 }
 
 // -- Overlay de título/descripción -------------------------------------------
