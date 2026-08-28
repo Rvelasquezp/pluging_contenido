@@ -1,0 +1,74 @@
+// -----------------------------------------------------------------------------
+// PixelCore Gallery — layout "staggered" (grid flotante, escalonado,
+// infinito, ver js/gallery/layouts/staggered.js para la animación GSAP).
+//
+// A propósito, SIN grid/columnas/masonry: la galería es un solo "escenario"
+// (position:relative, alto fijo, overflow:hidden) donde cada imagen flota
+// de forma independiente (position:absolute, X/tamaño/velocidad propios,
+// calculados en JS) — nunca se alinean en filas ni columnas.
+// -----------------------------------------------------------------------------
+
+@use "../../abstracts/variables" as v;
+@use "../../abstracts/mixins" as m;
+
+.pixelcore-gallery--staggered {
+	position: relative;
+	height: 100vh;
+	overflow: hidden;
+}
+
+// La imagen conserva su proporción real (igual que Masonry/Waterfall/
+// Afterglow) — anula el default de _base.scss (height:100% +
+// object-fit:cover, pensado para cajas de tamaño fijo).
+.pixelcore-gallery--staggered .pixelcore-gallery__image {
+	height: auto;
+	object-fit: unset;
+}
+
+// Sin fondo propio en el item — la caja siempre calza con la imagen.
+.pixelcore-gallery--staggered .pixelcore-gallery__item {
+	background-color: transparent;
+}
+
+// Fallback mientras el JS no ha corrido todavía (o sin GSAP: staggered.js
+// igual muestra las imágenes, solo sin animación — así que este selector
+// normalmente solo se ve un instante al cargar, o nunca si JS/GSAP están
+// desactivados del todo). Sin grid ni columnas acá tampoco — una lista
+// simple, apilada, siempre visible.
+.pixelcore-gallery--staggered:not( .pixelcore-gallery--staggered-js ) {
+	position: static;
+	height: auto;
+	overflow: visible;
+	display: flex;
+	flex-direction: column;
+	gap: v.$spacing-md;
+}
+
+.pixelcore-gallery--staggered:not( .pixelcore-gallery--staggered-js ) .pixelcore-gallery__item {
+	width: 100%;
+	max-width: 320px;
+}
+
+// Evita el "flash" al cargar: antes de que GSAP tome control, las
+// imágenes se verían un instante amontonadas en su tamaño final sin
+// posicionar y después saltarían de golpe a su lugar — feo. En vez de
+// eso, arranca invisible y aparece con un fade corto justo cuando
+// staggered.js agrega la clase --staggered-js (momento en el que la
+// posición/animación YA está puesta). Sin JS (la clase nunca se agrega),
+// se queda visible igual — nunca se rompe.
+.pixelcore-gallery--staggered .pixelcore-gallery__item {
+	opacity: 0;
+	transition: opacity 0.25s ease;
+
+	@include m.respect-reduced-motion {
+		transition: none;
+	}
+}
+
+.pixelcore-gallery--staggered.pixelcore-gallery--staggered-js .pixelcore-gallery__item {
+	opacity: 1;
+}
+
+.pixelcore-gallery--staggered:not( .pixelcore-gallery--staggered-js ) .pixelcore-gallery__item {
+	opacity: 1;
+}

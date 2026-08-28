@@ -26,6 +26,7 @@ class PixelCore_Gallery {
 	const FULLSCREEN_HANDLE = 'pixelcore-gallery-fullscreen';
 	const WATERFALL_HANDLE  = 'pixelcore-gallery-waterfall';
 	const AFTERGLOW_HANDLE  = 'pixelcore-gallery-afterglow';
+	const STAGGERED_HANDLE  = 'pixelcore-gallery-staggered';
 	const LIGHTBOX_HANDLE   = 'pixelcore-gallery-lightbox';
 
 	/**
@@ -179,6 +180,22 @@ class PixelCore_Gallery {
 				'needs_gap'     => true,
 				'js_handle'     => self::AFTERGLOW_HANDLE,
 			),
+			'staggered'  => array(
+				'label'         => __( 'Staggered Image Grid', 'capixel-components' ),
+				// A propósito, SIN sistema de columnas — nada de
+				// needs_columns/needs_gap acá. Cada imagen flota de forma
+				// independiente: posición X propia (aleatoria pero
+				// determinística), tamaño propio (escala aleatoria) y su
+				// propio ciclo infinito de abajo hacia arriba (GSAP,
+				// repeat:-1) — nunca se alinean en filas/columnas, la
+				// cantidad y distribución las decide la lógica de la
+				// animación, no una configuración de columnas en Gutenberg.
+				// Sin GSAP, degrada a una lista simple (ver
+				// register_assets() / _staggered.scss).
+				'needs_columns' => false,
+				'needs_gap'     => false,
+				'js_handle'     => self::STAGGERED_HANDLE,
+			),
 		);
 	}
 
@@ -288,6 +305,18 @@ class PixelCore_Gallery {
 		}
 
 		wp_register_script( self::AFTERGLOW_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/afterglow.js', $afterglow_deps, $this->asset_version( 'js/gallery/layouts/afterglow.js' ), true );
+
+		// "staggered" no depende del scroll para nada (es una animación por
+		// tiempo, siempre corriendo) — solo necesita GSAP a secas, nunca
+		// ScrollTrigger. Sin GSAP, staggered.js igual arma las columnas
+		// (sin animación) — nunca se rompe.
+		$staggered_deps = array( self::CORE_HANDLE );
+
+		if ( PixelCore_Settings::get( 'enable_gsap' ) ) {
+			$staggered_deps[] = PixelCore_Assets::GSAP_HANDLE;
+		}
+
+		wp_register_script( self::STAGGERED_HANDLE, PIXELCORE_URL . 'js/gallery/layouts/staggered.js', $staggered_deps, $this->asset_version( 'js/gallery/layouts/staggered.js' ), true );
 	}
 
 	/**

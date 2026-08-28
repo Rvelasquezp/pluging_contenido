@@ -72,6 +72,7 @@
 		{ value: "fullscreen", label: "Fullscreen Gallery", needsColumns: false, needsGap: false },
 		{ value: "waterfall", label: "Parallax Waterfall", needsColumns: true, needsGap: true, needsOverlayText: true },
 		{ value: "afterglow", label: "Afterglow (drift & dissolve)", needsColumns: true, needsGap: true },
+		{ value: "staggered", label: "Staggered Image Grid", needsColumns: false, needsGap: false },
 	];
 
 	function getLayouts() {
