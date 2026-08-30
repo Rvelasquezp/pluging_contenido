@@ -203,6 +203,24 @@
 		// derivar más allá de este ancho, nunca.
 		var containerWidth = el.clientWidth;
 
+		// Posición/tamaño de reposo de TODAS las imágenes (ya puestos por
+		// buildScatter en left/top/width) — hace falta para acotar la
+		// deriva de cada una también contra sus VECINAS, no solo contra
+		// los bordes del contenedor. Sin esto, dos imágenes que en reposo
+		// no se tocan (buildScatter ya lo garantiza) podían igual
+		// terminar superpuestas en pantalla si la deriva de una empujaba
+		// hacia el espacio de la otra durante el scroll.
+		var restRects = items.map( function ( it ) {
+			var w = parseFloat( it.style.width ) || 0;
+
+			return {
+				x: parseFloat( it.style.left ) || 0,
+				y: parseFloat( it.style.top ) || 0,
+				w: w,
+				h: w * intrinsicRatio( it ),
+			};
+		} );
+
 		items.forEach( function ( item, index ) {
 			if ( item._pcAfterglowTriggers ) {
 				item._pcAfterglowTriggers.forEach( function ( st ) {
@@ -265,6 +283,47 @@
 			// (xPercent es relativo al ancho del elemento, no a px).
 			var maxLeftPercent = -( itemLeft / itemW ) * 100;
 			var maxRightPercent = ( ( containerWidth - ( itemLeft + itemW ) ) / itemW ) * 100;
+
+			// Además del borde del contenedor, tampoco puede derivar hacia
+			// una imagen VECINA — solo importan las que se superponen en
+			// altura (con el mismo GAP que usó buildScatter al colocarlas;
+			// dos imágenes en filas distintas nunca podrían tocarse
+			// horizontalmente sin importar la deriva). De las vecinas que sí
+			// comparten altura, la que está más cerca a cada lado es la que
+			// termina mandando cuánto margen queda para ese lado.
+			var restRect = restRects[ index ];
+
+			restRects.forEach( function ( other, otherIndex ) {
+				if ( otherIndex === index ) {
+					return;
+				}
+
+				var shareRow =
+					restRect.y < other.y + other.h + GAP && restRect.y + restRect.h + GAP > other.y;
+
+				if ( ! shareRow ) {
+					return;
+				}
+
+				// Se reparte el espacio libre A LA MITAD entre esta imagen y
+				// la vecina — no toda la distancia hasta ella. La vecina
+				// tiene su PROPIO cálculo simétrico (este mismo bloque,
+				// corriendo para su índice) que también le reserva su
+				// mitad — así, aunque las dos deriven al mismo tiempo la
+				// una hacia la otra usando el máximo permitido, juntas
+				// nunca superan el espacio libre real entre ambas.
+				if ( other.x >= restRect.x + restRect.w ) {
+					// La vecina está a la derecha.
+					var roomRight = ( other.x - GAP - ( restRect.x + restRect.w ) ) / 2;
+
+					maxRightPercent = Math.min( maxRightPercent, ( roomRight / itemW ) * 100 );
+				} else if ( other.x + other.w <= restRect.x ) {
+					// La vecina está a la izquierda.
+					var roomLeft = ( restRect.x - ( other.x + other.w ) - GAP ) / 2;
+
+					maxLeftPercent = Math.max( maxLeftPercent, -( roomLeft / itemW ) * 100 );
+				}
+			} );
 
 			var rawDrift = -50 + seeded( index * 6.2 ) * 100; // -50 a 50, antes de acotar.
 			var xTransform = Math.max( maxLeftPercent, Math.min( maxRightPercent, rawDrift ) );
