@@ -41,27 +41,16 @@
 	position: absolute;
 }
 
-// Fallback mientras el JS no ha corrido todavía (o sin GSAP/ScrollTrigger:
-// afterglow.js igual arma el mosaico disperso, solo sin animación — así
-// que este selector normalmente solo se ve un instante al cargar, o nunca
-// si JS está desactivado del todo).
-.pixelcore-gallery--afterglow:not( .pixelcore-gallery--afterglow-js ) {
-	display: grid;
-	grid-template-columns: repeat( var( --pc-gallery-cols-desktop ), 1fr );
-	gap: var( --pc-gallery-gap );
-
-	@include m.tablet {
-		grid-template-columns: repeat( var( --pc-gallery-cols-tablet ), 1fr );
-	}
-
-	@include m.mobile {
-		grid-template-columns: repeat( var( --pc-gallery-cols-mobile ), 1fr );
-	}
-}
-
-.pixelcore-gallery--afterglow:not( .pixelcore-gallery--afterglow-js ) .pixelcore-gallery__item {
-	aspect-ratio: 3 / 4;
-}
+// A propósito, SIN grid/columnas de respaldo mientras el JS todavía no
+// corrió: ese fallback mostraba las imágenes en una grilla por un
+// instante y LUEGO las reacomodaba al mosaico disperso apenas
+// afterglow.js terminaba — un reflow visual feo justo al cargar. En vez
+// de eso, el item simplemente arranca invisible (ver opacity:0 más abajo)
+// hasta que el JS calculó su posición final y la aplicó — así nunca hay
+// nada que reacomodar a la vista. El posicionamiento de esta galería
+// siempre depende de JS (no existe una versión sin JS con sentido para un
+// colage disperso calculado dinámicamente), así que no hace falta ningún
+// estado intermedio.
 
 // afterglow.js envuelve el contenido de cada item en este "inner" — es lo
 // único que GSAP transforma (scale/xPercent/yPercent). El item en sí NUNCA
@@ -73,12 +62,16 @@
 }
 
 // Evita el "flash" al cargar: antes de que GSAP tome control, la imagen se
-// vería un instante a su tamaño final SIN transformar y después saltaría
-// de golpe a su escala inicial — feo. En vez de eso, arranca invisible y
-// aparece con un fade corto justo cuando afterglow.js agrega la clase
-// --afterglow-js (momento en el que el transform de GSAP YA está puesto),
-// así lo que se ve es un fade suave, nunca un salto de tamaño. Sin JS (la
-// clase nunca se agrega), se queda visible igual — nunca se rompe.
+// vería un instante amontonada en su posición sin calcular (o en la
+// grilla de respaldo que ya no existe) y después saltaría de golpe a su
+// lugar final — feo. En vez de eso, arranca invisible y aparece con un
+// fade corto justo cuando afterglow.js agrega la clase --afterglow-js
+// (momento en el que la posición/animación YA están puestas), así lo que
+// se ve es un fade suave, nunca un reflow. A propósito, sin JS la imagen
+// se queda invisible para siempre en vez de mostrarse sin posicionar —
+// el layout de esta galería depende enteramente de JS (no hay una
+// posición "de respaldo" con sentido para un mosaico disperso calculado
+// dinámicamente).
 .pixelcore-gallery--afterglow .pixelcore-gallery__item {
 	opacity: 0;
 	transition: opacity 0.25s ease;
@@ -89,10 +82,6 @@
 }
 
 .pixelcore-gallery--afterglow.pixelcore-gallery--afterglow-js .pixelcore-gallery__item {
-	opacity: 1;
-}
-
-.pixelcore-gallery--afterglow:not( .pixelcore-gallery--afterglow-js ) .pixelcore-gallery__item {
 	opacity: 1;
 }
 
