@@ -16,6 +16,25 @@
 
 .pixelcore-gallery--afterglow.pixelcore-gallery--afterglow-js {
 	position: relative;
+	// SIN overflow:hidden acá tampoco — a diferencia de un primer intento
+	// (recortar a nivel de toda la galería en vez de por-item), incluso
+	// eso corta imágenes: las que quedan colocadas cerca del borde
+	// izquierdo/derecho del contenedor, con la deriva de hasta ±100% de
+	// su propio ancho, terminan saliéndose del propio borde de LA
+	// GALERÍA (no solo de su caja chica) — así que igual se veían
+	// cortadas, ahora contra el borde del wrapper en vez del borde del
+	// item. La consigna es que NINGUNA imagen se recorte nunca, así que
+	// acá no hay ningún overflow:hidden en absoluto — ver el
+	// overflow:visible de abajo, que anula el overflow:hidden por-item
+	// de _base.scss (pensado para cajas de tamaño fijo tipo
+	// Grid/Masonry, donde SÍ hace falta recortar cada una
+	// individualmente) SOLO para Afterglow, sin tocar el resto de
+	// layouts que sí lo necesitan.
+	overflow: visible;
+}
+
+.pixelcore-gallery--afterglow .pixelcore-gallery__item {
+	overflow: visible;
 }
 
 .pixelcore-gallery--afterglow.pixelcore-gallery--afterglow-js .pixelcore-gallery__item {

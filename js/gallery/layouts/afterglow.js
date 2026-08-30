@@ -3,52 +3,67 @@
  * disolución independiente por imagen).
  *
  * A diferencia del resto de layouts (grid/masonry/waterfall), acá NO hay
- * ningún sistema de columnas ni CSS Grid por debajo — cada imagen se
- * posiciona de forma independiente (position:absolute, X/Y propios) para
- * lograr un collage disperso, no una grilla prolija. El posicionamiento se
- * calcula acá (JS), no en CSS, porque necesita el ancho/alto real de cada
- * imagen (que varía por foto) para decidir dónde entra cada una sin que se
- * choquen.
+ * ningún sistema de columnas ni CSS Grid por debajo — ni siquiera "carriles"
+ * internos (la versión anterior de este archivo sí tenía carriles fijos por
+ * índice, y aunque no eran configurables desde el backend, el resultado
+ * visual igual se leía como columnas: cada carril era una franja de ancho
+ * fijo que ninguna imagen cruzaba nunca). Ahora cada imagen se posiciona de
+ * forma completamente libre —
  *
- * "Carriles" (lanes): la galería se divide en N franjas verticales
- * angostas (según --pc-gallery-cols-*), y cada imagen cae en un carril por
- * índice (round-robin). DENTRO de su carril, cada imagen tiene:
- *   - un ancho propio, variable (ciclo grande/chico + un poco de jitter).
- *   - un corrimiento horizontal aleatorio (nunca se sale del carril, así
- *     nunca choca con el carril vecino).
- *   - un espacio vertical propio hasta la siguiente imagen del mismo
- *     carril (gap fijo + un extra aleatorio).
- * El resultado: nunca se alinean en filas/columnas parejas, aunque por
- * debajo siga habiendo una estructura simple (carriles) que garantiza que
- * ninguna imagen se superponga con otra.
+ *   1. Se le calcula un tamaño propio (fracción del ancho TOTAL del
+ *      contenedor, no de ningún carril — ciclo grande/chico/mediano más
+ *      jitter fino).
+ *   2. Se prueban varias posiciones (X, Y) candidatas al azar dentro de
+ *      TODO el ancho disponible (nunca limitado a una franja), y se elige
+ *      la que menos se superponga con las imágenes ya colocadas — si
+ *      alguna candidata no se superpone con ninguna, se usa esa
+ *      directamente.
+ *   3. Si ningún candidato quedó libre de superposición, se la coloca
+ *      simplemente debajo de todo lo ya construido (evita amontonar
+ *      imágenes una sobre otra cuando el espacio ya está lleno).
  *
- * El "aleatorio" es DETERMINÍSTICO (una función seno con el índice como
- * semilla, no Math.random()) — mismo layout siempre en la misma página,
- * no cambia composición cada vez que se refresca.
+ * El resultado: una composición realmente irregular — el ancho de cada
+ * imagen no está atado a ninguna banda, así que puede terminar en
+ * cualquier punto horizontal, y las imágenes vecinas en el HTML pueden
+ * terminar en cualquier parte de la composición final, no en una posición
+ * predecible por su índice.
  *
- * Animación (GSAP + ScrollTrigger, si están disponibles): cada imagen es
- * su propio trigger, con tres cosas pasando en simultáneo mientras
- * atraviesa la pantalla —
- *   1. Entra corriéndose desde un costado (dirección propia, no alternada
- *      par/impar) agrandándose desde escala 0, se mantiene normal, y al
- *      salir se corre hacia el lado opuesto encogiéndose de nuevo — la
- *      "disolución". La distancia de corrida (DRIFT) y la dirección son
- *      propias de cada imagen, no todas iguales.
- *   2. Una deriva vertical suave y continua durante TODO el recorrido
- *      (no solo al entrar/salir) — el efecto "floating".
- * Nada de esto pinea nada: cada imagen es su propio ScrollTrigger con
- * start:"top bottom" / end:"bottom top" / scrub, igual que
- * horizontal/vertical/waterfall — no depende de pin/sticky, que en este
- * sitio están rotos por el transform del ScrollSmoother del theme.
+ * El "aleatorio" es DETERMINÍSTICO (una función seno con el índice y el
+ * intento como semilla, no Math.random()) — mismo layout siempre en la
+ * misma página, no cambia composición cada vez que se refresca.
+ *
+ * Animación (GSAP + ScrollTrigger, si están disponibles) — DOS ciclos por
+ * imagen, uno después del otro, nunca en simultáneo:
+ *
+ *   1. "Normal": desde que la imagen entra por abajo de la pantalla hasta
+ *      justo antes de empezar a desaparecer — acá SÍ deriva lateralmente
+ *      (xPercent, un valor propio por imagen, positivo o negativo).
+ *   2. "Desaparición": desde ahí hasta que termina de salir por completo
+ *      — acá la imagen se achica a escala 0 (nunca sigue derivando
+ *      lateralmente; el xPercent queda quieto en el valor que alcanzó al
+ *      terminar el ciclo normal, GSAP no le pide nada más a esa
+ *      propiedad).
+ *
+ * El punto donde termina uno y empieza el otro NO es literalmente el
+ * borde superior de la pantalla — es el borde INFERIOR de un header fixed
+ * del theme, si hay uno (ver disappearStart() más abajo, usa la misma
+ * utilidad que horizontal.js/vertical.js para detectarlo sin necesitar
+ * saber su selector). Sin este ajuste, el achicamiento pasaría tapado
+ * detrás del header — apenas se alcanzaría a ver.
+ *
+ * El transform-origin de la escala es propio por imagen (izquierda o
+ * derecha) — decide hacia qué lado se "achica" al desvanecerse.
+ *
+ * Nada de esto pinea nada: los triggers usan scrub, no dependen de
+ * pin/sticky, que en este sitio están rotos por el transform que el
+ * ScrollSmoother del theme le aplica a un ancestro compartido.
  *
  * OJO: el trigger nunca es el mismo elemento que GSAP transforma. El ITEM
  * (con su position:absolute/left/top/width ya calculados acá) es la
- * referencia ESTABLE que mide ScrollTrigger; el contenido va envuelto en
- * un "inner" que es lo único que se anima (scale/xPercent/yPercent) — si
- * el trigger fuera el mismo elemento animado, ScrollTrigger lo mediría en
- * cuanto se crea el timeline, que es justo cuando ya está en escala 0, y
- * terminaría calculando un rango de scroll casi nulo (la animación se
- * vería como un salto instantáneo en vez de una transición).
+ * referencia ESTABLE que miden los ScrollTrigger; el contenido va
+ * envuelto en un "inner" que es lo único que se anima (xPercent/scale) —
+ * si el trigger fuera el mismo elemento animado, ScrollTrigger podría
+ * medirlo ya escalado a 0 y calcular mal el rango de scroll.
  *
  * @package PixelCore_Components
  */
@@ -57,30 +72,6 @@
 
 	if ( ! window.PixelCoreGallery ) {
 		return;
-	}
-
-	function currentBreakpointName() {
-		if ( window.PixelCoreAnimations && window.PixelCoreAnimations.currentBreakpoint ) {
-			return window.PixelCoreAnimations.currentBreakpoint();
-		}
-
-		var width = window.innerWidth;
-
-		if ( width <= 768 ) {
-			return "mobile";
-		}
-
-		if ( width <= 1024 ) {
-			return "tablet";
-		}
-
-		return "desktop";
-	}
-
-	function readInt( styles, name, fallback ) {
-		var value = parseInt( styles.getPropertyValue( name ), 10 );
-
-		return isNaN( value ) || value <= 0 ? fallback : value;
 	}
 
 	// Pseudo-aleatorio determinístico (0 a 1) a partir de un número semilla
@@ -92,15 +83,16 @@
 		return x - Math.floor( x );
 	}
 
-	// Tamaño de cada imagen, como fracción del ancho de su carril — ciclo
-	// grande/chico/mediano (variedad editorial) más un poco de jitter fino.
-	var SIZE_CLASSES = [ 1, 0.68, 0.85, 0.55 ];
+	// Tamaño de cada imagen, como fracción del ancho TOTAL del contenedor
+	// (no de ningún carril) — ciclo grande/chico/mediano/chico-mediano
+	// (variedad editorial) más un poco de jitter fino.
+	var WIDTH_FRACTIONS = [ 0.24, 0.15, 0.19, 0.12 ];
 
-	function widthRatio( index ) {
-		var base = SIZE_CLASSES[ index % SIZE_CLASSES.length ];
-		var jitter = 0.9 + seeded( index * 3.1 ) * 0.2;
+	function itemWidth( containerWidth, index ) {
+		var base = WIDTH_FRACTIONS[ index % WIDTH_FRACTIONS.length ];
+		var jitter = 0.85 + seeded( index * 3.1 ) * 0.3;
 
-		return Math.min( 1, base * jitter );
+		return containerWidth * base * jitter;
 	}
 
 	function intrinsicRatio( item ) {
@@ -111,34 +103,88 @@
 		return w && h ? h / w : 9 / 16;
 	}
 
+	function rectsOverlap( a, b, gap ) {
+		return (
+			a.x < b.x + b.w + gap &&
+			a.x + a.w + gap > b.x &&
+			a.y < b.y + b.h + gap &&
+			a.y + a.h + gap > b.y
+		);
+	}
+
+	// Cuántas posiciones candidatas se prueban por imagen antes de resignarse
+	// a colocarla debajo de todo lo construido — más intentos, composición
+	// más compacta (menos huecos), a costa de un poco más de cálculo (nada
+	// perceptible con la cantidad de imágenes típica de una galería).
+	var PLACEMENT_ATTEMPTS = 24;
+	var GAP = 16;
+
 	function buildScatter( el, items ) {
-		var styles = getComputedStyle( el );
-		var lanes = readInt( styles, "--pc-gallery-cols-" + currentBreakpointName(), 4 );
-		var gap = readInt( styles, "--pc-gallery-gap", 16 );
 		var containerWidth = el.clientWidth;
-		var laneWidth = containerWidth / lanes;
-		var cursors = new Array( lanes ).fill( 0 );
+		var placed = [];
+		var builtHeight = 0;
 
 		items.forEach( function ( item, index ) {
-			var lane = index % lanes;
-			var w = laneWidth * widthRatio( index );
+			var w = itemWidth( containerWidth, index );
 			var h = w * intrinsicRatio( item );
+			var maxX = Math.max( containerWidth - w, 0 );
 
-			var maxJitterX = Math.max( laneWidth - w, 0 );
-			var x = lane * laneWidth + seeded( index * 7.7 ) * maxJitterX;
+			var best = null;
 
-			var extraGap = gap + seeded( index * 5.3 ) * gap * 2.5;
-			var y = cursors[ lane ] + ( 0 === cursors[ lane ] ? seeded( index * 2.2 ) * gap * 3 : extraGap );
+			for ( var attempt = 0; attempt < PLACEMENT_ATTEMPTS; attempt++ ) {
+				var candidate = {
+					x: seeded( index * 11.3 + attempt * 17.9 ) * maxX,
+					// El rango vertical candidato incluye un poco más de lo
+					// ya construido — así una imagen puede terminar
+					// "intercalada" con las de arriba en vez de siempre
+					// abajo de todo, sin dejar de evitar superposiciones.
+					y: seeded( index * 13.7 + attempt * 19.1 ) * ( builtHeight + h ),
+					w: w,
+					h: h,
+				};
+
+				var collisions = 0;
+
+				for ( var p = 0; p < placed.length; p++ ) {
+					if ( rectsOverlap( candidate, placed[ p ], GAP ) ) {
+						collisions++;
+					}
+				}
+
+				if ( ! best || collisions < best.collisions ) {
+					best = { rect: candidate, collisions: collisions };
+				}
+
+				if ( 0 === collisions ) {
+					break;
+				}
+			}
+
+			// Ningún candidato quedó libre de superposición — en vez de
+			// dejarla encimada, se la manda simplemente debajo de todo lo
+			// ya construido (nunca se pierde una imagen, nunca queda tapada).
+			if ( best.collisions > 0 ) {
+				best = {
+					rect: {
+						x: seeded( index * 11.3 ) * maxX,
+						y: builtHeight + GAP,
+						w: w,
+						h: h,
+					},
+					collisions: 0,
+				};
+			}
 
 			item.style.position = "absolute";
-			item.style.left = x + "px";
-			item.style.top = y + "px";
+			item.style.left = best.rect.x + "px";
+			item.style.top = best.rect.y + "px";
 			item.style.width = w + "px";
 
-			cursors[ lane ] = y + h;
+			placed.push( best.rect );
+			builtHeight = Math.max( builtHeight, best.rect.y + best.rect.h );
 		} );
 
-		el.style.height = Math.max.apply( null, cursors ) + "px";
+		el.style.height = builtHeight + "px";
 	}
 
 	function applyMotion( items ) {
@@ -152,8 +198,10 @@
 		gsap.registerPlugin( ScrollTrigger );
 
 		items.forEach( function ( item, index ) {
-			if ( item._pcAfterglowTrigger ) {
-				item._pcAfterglowTrigger.kill();
+			if ( item._pcAfterglowTriggers ) {
+				item._pcAfterglowTriggers.forEach( function ( st ) {
+					st.kill();
+				} );
 			}
 
 			var inner = item.querySelector( ":scope > .pixelcore-gallery__afterglow-inner" );
@@ -169,62 +217,93 @@
 				item.appendChild( inner );
 			}
 
-			// Cada imagen tiene su propia dirección, distancia de corrida y
-			// deriva vertical — nada calcado entre imágenes vecinas.
-			var direction = seeded( index * 4.6 ) > 0.5 ? 1 : -1;
-			var drift = 35 + seeded( index * 6.2 ) * 55; // 35% a 90%.
-			var floatDir = seeded( index * 8.4 ) > 0.5 ? 1 : -1;
-			var floatAmount = 6 + seeded( index * 9.1 ) * 14; // 6% a 20%.
+			// Punto donde termina el ciclo "normal" (deriva horizontal) y
+			// empieza la desaparición (achicado) — el borde inferior de un
+			// header fixed del theme, si hay uno, en vez de literalmente el
+			// borde superior de la pantalla. Sin esto, ese tramo pasa TAPADO
+			// detrás del header y no se alcanza a ver. Usa la misma utilidad
+			// que ya usan horizontal.js/vertical.js para esto (detecta el
+			// header pintado arriba sin necesitar saber su selector) — se
+			// recalcula solo en cada refresh (core.js ya llama a
+			// ScrollTrigger.refresh() cuando el alto real del header
+			// cambia, ej. si se encoge al scrollear).
+			function disappearStart() {
+				var offset = window.PixelCoreGallery.fixedHeaderOffset();
+
+				return offset > 0 ? "top " + offset + "px" : "top top";
+			}
+
+			// Un lado propio por imagen (izquierda o derecha) — decide hacia
+			// dónde ancla el achicamiento al desaparecer.
+			var anchorLeft = seeded( index * 4.6 ) < 0.5;
 
 			gsap.set( inner, {
-				transformOrigin: direction > 0 ? "left center" : "right center",
+				transformOrigin: anchorLeft ? "0% 50%" : "100% 50%",
 			} );
 
-			var timeline = gsap.timeline( {
+			// Un solo valor de deriva por imagen (puede salir negativo o
+			// positivo).
+			// var xTransform = -100 + seeded( index * 6.2 ) * 200; // -100 a 100.
+			var xTransform = -50 + seeded( index * 6.2 ) * 100;
+
+			// Deriva horizontal — SOLO durante el ciclo "normal": desde que
+			// la imagen entra por abajo hasta justo antes de empezar a
+			// desaparecer (el mismo punto donde arranca el achicado, ver
+			// abajo). Una vez que ese trigger termina, GSAP simplemente deja
+			// el xPercent quieto en el valor que alcanzó — no sigue
+			// corriéndose durante la desaparición.
+			var driftTrigger = gsap.to( inner, {
+				xPercent: xTransform,
+				ease: "none",
 				scrollTrigger: {
 					trigger: item,
 					start: "top bottom",
-					end: "bottom top",
-					// Número (no true): con scrub:true la animación sigue el
-					// scroll 1:1, así que un scroll rápido/brusco se ve igual
-					// de brusco. Con un número, GSAP interpola (lerp) hacia la
-					// posición objetivo en vez de saltar directo — 3s de
-					// colchón para que incluso un scroll muy brusco se vea
-					// progresivo, nunca de golpe.
-					scrub: 3,
+					end: disappearStart,
+					scrub: true,
+					invalidateOnRefresh: true,
 				},
-			} );
+			} ).scrollTrigger;
 
-			// ease "power2" (no "none") en la entrada/salida a propósito: la
-			// escala no crece/decrece a velocidad pareja, arranca/termina
-			// más lento — se siente orgánico en vez de mecánico, reforzando
-			// el suavizado del scrub de arriba.
-			timeline
-				.fromTo(
-					inner,
-					{ xPercent: direction * drift, scale: 0 },
-					{ xPercent: 0, scale: 1, ease: "power2.out", duration: 0.3 },
-					0
-				)
-				.to( inner, { xPercent: 0, scale: 1, ease: "none", duration: 0.4 } )
-				.to( inner, { xPercent: -direction * drift, scale: 0, ease: "power2.in", duration: 0.3 } )
-				// Deriva vertical continua ("floating"), en paralelo a lo
-				// anterior — no está atada a las mismas 3 etapas, dura todo
-				// el recorrido.
-				.fromTo(
-					inner,
-					{ yPercent: floatDir * floatAmount },
-					{ yPercent: -floatDir * floatAmount, ease: "none", duration: 1 },
-					0
-				);
+			// Encogida a escala 0 — arranca justo donde termina la deriva de
+			// arriba (el borde inferior del header, no el borde superior de
+			// la pantalla) y termina cuando la imagen sale del todo.
+			var scaleTrigger = gsap.to( inner, {
+				scale: 0,
+				ease: "none",
+				scrollTrigger: {
+					trigger: item,
+					start: disappearStart,
+					end: "bottom top",
+					scrub: true,
+					invalidateOnRefresh: true,
+				},
+			} ).scrollTrigger;
 
-			item._pcAfterglowTrigger = timeline.scrollTrigger;
+			item._pcAfterglowTriggers = [ driftTrigger, scaleTrigger ];
 		} );
 	}
 
-	function init( el ) {
+	// Arma el mosaico y lo anima, pero SOLO si el contenedor ya tiene un
+	// ancho real medible — si esto corre con el.clientWidth en 0 (el
+	// wrapper de scroll suave del theme puede no haber terminado de
+	// acomodarse en el momento exacto en que esto corre), TODAS las
+	// imágenes salen con ancho/alto 0, y ScrollTrigger termina midiendo
+	// cada trigger con start===end (0 píxeles de rango de scroll) — el
+	// achicamiento pasaría de golpe en un solo pixel en vez de
+	// progresivamente. Mismo patrón que waterfall.js/staggered.js.
+	function tryBuild( el, items ) {
+		if ( el.clientWidth <= 0 ) {
+			return false;
+		}
+
+		buildScatter( el, items );
+		applyMotion( items );
 		el.classList.add( "pixelcore-gallery--afterglow-js" );
 
+		return true;
+	}
+
+	function init( el ) {
 		var items = el._pixelcoreItems || Array.prototype.slice.call( el.querySelectorAll( ".pixelcore-gallery__item" ) );
 
 		el._pixelcoreItems = items;
@@ -233,8 +312,23 @@
 			return;
 		}
 
-		buildScatter( el, items );
-		applyMotion( items );
+		if ( tryBuild( el, items ) ) {
+			return;
+		}
+
+		var attempts = 0;
+
+		function retry() {
+			attempts++;
+
+			if ( tryBuild( el, items ) || attempts >= 10 ) {
+				return;
+			}
+
+			requestAnimationFrame( retry );
+		}
+
+		requestAnimationFrame( retry );
 	}
 
 	init.onResize = function ( el ) {
@@ -244,8 +338,7 @@
 			return;
 		}
 
-		buildScatter( el, items );
-		applyMotion( items );
+		tryBuild( el, items );
 
 		if ( window.ScrollTrigger ) {
 			window.ScrollTrigger.refresh();
