@@ -187,7 +187,7 @@
 		el.style.height = builtHeight + "px";
 	}
 
-	function applyMotion( items ) {
+	function applyMotion( el, items ) {
 		if ( ! window.gsap || ! window.ScrollTrigger ) {
 			return;
 		}
@@ -196,6 +196,12 @@
 		var ScrollTrigger = window.ScrollTrigger;
 
 		gsap.registerPlugin( ScrollTrigger );
+
+		// El área de contenido real (lo que buildScatter usó como
+		// contenedor, ya excluye el padding de la galería y de su parent
+		// — ver comentario grande en buildScatter): ninguna imagen debe
+		// derivar más allá de este ancho, nunca.
+		var containerWidth = el.clientWidth;
 
 		items.forEach( function ( item, index ) {
 			if ( item._pcAfterglowTriggers ) {
@@ -242,9 +248,26 @@
 			} );
 
 			// Un solo valor de deriva por imagen (puede salir negativo o
-			// positivo).
-			// var xTransform = -100 + seeded( index * 6.2 ) * 200; // -100 a 100.
-			var xTransform = -50 + seeded( index * 6.2 ) * 100;
+			// positivo) — PERO acotado al espacio real que esa imagen
+			// tiene disponible hasta el borde del contenedor (que ya
+			// respeta el padding del parent, ver containerWidth arriba),
+			// según su propia posición. Sin este límite, el mismo rango
+			// fijo de deriva (ej. ±50%) podía empujar una imagen cercana
+			// al borde más allá del área de contenido real — ahora cada
+			// imagen usa como máximo el margen que realmente tiene a cada
+			// lado, así nunca invade el padding del parent, sin necesitar
+			// overflow:hidden para lograrlo.
+			var itemLeft = parseFloat( item.style.left ) || 0;
+			var itemW = parseFloat( item.style.width ) || 1;
+
+			// Cuánto puede moverse hacia cada lado sin pasar el borde del
+			// contenedor, expresado como % del propio ancho de la imagen
+			// (xPercent es relativo al ancho del elemento, no a px).
+			var maxLeftPercent = -( itemLeft / itemW ) * 100;
+			var maxRightPercent = ( ( containerWidth - ( itemLeft + itemW ) ) / itemW ) * 100;
+
+			var rawDrift = -50 + seeded( index * 6.2 ) * 100; // -50 a 50, antes de acotar.
+			var xTransform = Math.max( maxLeftPercent, Math.min( maxRightPercent, rawDrift ) );
 
 			// Deriva horizontal — SOLO durante el ciclo "normal": desde que
 			// la imagen entra por abajo hasta justo antes de empezar a
@@ -297,7 +320,7 @@
 		}
 
 		buildScatter( el, items );
-		applyMotion( items );
+		applyMotion( el, items );
 		el.classList.add( "pixelcore-gallery--afterglow-js" );
 
 		return true;
