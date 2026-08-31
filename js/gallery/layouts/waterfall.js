@@ -8,8 +8,8 @@
  * posicionamiento se calcula acá (JS), no en CSS, porque necesita el
  * ancho/alto real de cada imagen (que varía por foto) para decidir dónde
  * entra cada una sin que se choquen — ver el comentario grande de
- * buildScatter() más abajo (mismo algoritmo de "carriles" que
- * afterglow.js).
+ * buildScatter() más abajo (mismo algoritmo de colocación libre por
+ * intentos que afterglow.js, sin carriles).
  *
  * La diferencia con Afterglow es la ANIMACIÓN: acá cada imagen SIEMPRE está
  * visible (nunca se disuelve ni se encoge a escala 0) — solo tiene su
@@ -96,41 +96,85 @@
 		return w && h ? h / w : 3 / 4;
 	}
 
-	// "Carriles" verticales angostos (según --pc-gallery-cols-*): cada
-	// imagen cae en uno por índice (round-robin). Dentro de su carril tiene
-	// ancho propio, un corrimiento horizontal aleatorio (nunca se sale del
-	// carril, así nunca choca con el vecino) y un espacio vertical propio
-	// hasta la siguiente del mismo carril — nunca se alinean en filas ni
-	// columnas parejas, aunque por debajo siga habiendo una estructura
-	// simple que garantiza que nada se superponga.
+	// Sin carriles/columnas: cada imagen prueba varias posiciones (x,y)
+	// aleatorias dentro de todo el ancho disponible del contenedor y se
+	// queda con la que menos se superpone con las ya colocadas (0
+	// superposiciones si alguna candidata lo logra) — mismo algoritmo de
+	// colocación libre por intentos que usa afterglow.js, así ninguna
+	// queda atada a una franja/columna fija.
+	//
+	// --pc-gallery-cols-* se sigue leyendo acá, pero SOLO como referencia
+	// de escala para el tamaño de cada imagen (para no cambiar qué tan
+	// grande se ve cada una respecto de antes) — ya no se usa para decidir
+	// en qué carril/columna cae ni para su posición.
+	var PLACEMENT_ATTEMPTS = 24;
+
+	function rectsOverlap( a, b, gap ) {
+		return (
+			a.x < b.x + b.w + gap &&
+			a.x + a.w + gap > b.x &&
+			a.y < b.y + b.h + gap &&
+			a.y + a.h + gap > b.y
+		);
+	}
+
 	function buildScatter( el, items ) {
 		var styles = getComputedStyle( el );
-		var lanes = readInt( styles, "--pc-gallery-cols-" + currentBreakpointName(), 4 );
+		var sizeDivisor = readInt( styles, "--pc-gallery-cols-" + currentBreakpointName(), 4 );
 		var gap = readInt( styles, "--pc-gallery-gap", 16 );
 		var containerWidth = el.clientWidth;
-		var laneWidth = containerWidth / lanes;
-		var cursors = new Array( lanes ).fill( 0 );
+		var refWidth = containerWidth / sizeDivisor;
+		var placed = [];
+		var builtHeight = 0;
 
 		items.forEach( function ( item, index ) {
-			var lane = index % lanes;
-			var w = laneWidth * widthRatio( index );
+			var w = refWidth * widthRatio( index );
 			var h = w * intrinsicRatio( item );
+			var maxX = Math.max( containerWidth - w, 0 );
+			var best = null;
 
-			var maxJitterX = Math.max( laneWidth - w, 0 );
-			var x = lane * laneWidth + seeded( index * 7.7 ) * maxJitterX;
+			for ( var attempt = 0; attempt < PLACEMENT_ATTEMPTS; attempt++ ) {
+				var candidate = {
+					x: seeded( index * 11.3 + attempt * 17.9 ) * maxX,
+					y: seeded( index * 13.7 + attempt * 19.1 ) * ( builtHeight + h ),
+					w: w,
+					h: h,
+				};
 
-			var extraGap = gap + seeded( index * 5.3 ) * gap * 2.5;
-			var y = cursors[ lane ] + ( 0 === cursors[ lane ] ? seeded( index * 2.2 ) * gap * 3 : extraGap );
+				var collisions = 0;
+
+				for ( var p = 0; p < placed.length; p++ ) {
+					if ( rectsOverlap( candidate, placed[ p ], gap ) ) {
+						collisions++;
+					}
+				}
+
+				if ( ! best || collisions < best.collisions ) {
+					best = { rect: candidate, collisions: collisions };
+				}
+
+				if ( 0 === collisions ) {
+					break;
+				}
+			}
+
+			if ( best.collisions > 0 ) {
+				best = {
+					rect: { x: seeded( index * 11.3 ) * maxX, y: builtHeight + gap, w: w, h: h },
+					collisions: 0,
+				};
+			}
 
 			item.style.position = "absolute";
-			item.style.left = x + "px";
-			item.style.top = y + "px";
+			item.style.left = best.rect.x + "px";
+			item.style.top = best.rect.y + "px";
 			item.style.width = w + "px";
 
-			cursors[ lane ] = y + h;
+			placed.push( best.rect );
+			builtHeight = Math.max( builtHeight, best.rect.y + best.rect.h );
 		} );
 
-		el.style.height = Math.max.apply( null, cursors ) + "px";
+		el.style.height = builtHeight + "px";
 	}
 
 	// Qué tan rápido el valor "suavizado" persigue al "crudo" en cada
